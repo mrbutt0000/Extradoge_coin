@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Extra Doge</title>
+<script>window.__BOT_LINK="https://t.me/Extradogebot/app"; /* EDIT: your bot username + Mini App short name */</script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#0b0d12;--card:#151a26;--card2:#1c2333;--gold:#f7b731;--txt:#fff;--mut:#9aa3b5;--ok:#4cd987;--bad:#ff6b6b;--blue:#0052ff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+#app{max-width:520px;margin:0 auto;padding:16px 16px 96px}
+h1{font-size:20px}h2{font-size:17px;margin-bottom:10px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pill{background:var(--card2);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--mut)}
+.card{background:var(--card);border-radius:18px;padding:16px;margin-bottom:12px}
+.bal{text-align:center;padding:22px 16px}.bal .n{font-size:46px;font-weight:900;color:var(--gold)}.bal .l{color:var(--mut);font-size:13px}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;background:var(--gold);color:#1a1200;cursor:pointer}
+.btn:disabled{background:var(--card2);color:var(--mut);cursor:default}
+.btn.sec{background:var(--card2);color:#fff}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mut{color:var(--mut);font-size:13px}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.task{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid #232b3d}.task:first-of-type{border-top:0}
+.task .t{flex:1;font-size:15px}.task .r{color:var(--gold);font-weight:800;font-size:13px}
+.sm{border:0;border-radius:10px;padding:8px 12px;font-weight:800;font-size:13px;background:var(--gold);color:#1a1200;cursor:pointer}.sm:disabled{background:var(--card2);color:var(--mut)}
+input{width:100%;background:var(--card2);border:1px solid #2a3350;color:#fff;border-radius:12px;padding:13px;font-size:14px;margin:8px 0}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat div{background:var(--card2);border-radius:14px;padding:12px;text-align:center}.stat b{display:block;font-size:20px}
+.bar{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ff8c42)}
+nav{position:fixed;left:0;right:0;bottom:0;background:#10141f;border-top:1px solid #232b3d;display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav div{display:flex;width:100%;max-width:520px}nav button{flex:1;background:none;border:0;color:var(--mut);padding:10px 0 12px;font-size:11px;font-weight:700}nav button span{display:block;font-size:22px}nav button.on{color:var(--gold)}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#222a3d;border:1px solid #3a4666;padding:10px 16px;border-radius:12px;font-size:14px;z-index:9;max-width:90%}
+.warn{background:#2a2410;border:1px solid #5b4a15;color:#ffd76a;border-radius:12px;padding:10px 12px;font-size:12.5px;margin-top:10px}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-all}
+</style></head>
+<body>
+<div id="app"></div>
+<nav><div id="nav"></div></nav>
+<script>
+(function(){
+"use strict";
+var tg=window.Telegram&&window.Telegram.WebApp, S=null, tab="home", offset=0, busy=false, toastT=null;
+var $=function(s){return document.querySelector(s)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function coins(h){return (h/100).toFixed(2).replace(/\.00$/,"").replace(/(\.\d)0$/,"$1")}
+function toast(m){var t=$("#toast");if(t)t.remove();t=document.createElement("div");t.id="toast";t.className="toast";t.textContent=m;document.body.appendChild(t);clearTimeout(toastT);toastT=setTimeout(function(){t.remove()},2800)}
+var ERR={auth:"Session expired. Please close and reopen the app.",slow_down:"Slow down a little.",banned:"This account is blocked.",bad_address:"That is not a valid Base (0x…) address.",address_used:"This address is already used by another account.",change_limit:"Wallet change limit reached.",wallets_locked:"Wallet submissions are locked.",not_member:"Join first, then press Verify.",already_done:"Already completed.",not_started:"Open the link first.",server:"Server error. Try again.",unknown_task:"Unknown task."};
+function errText(e){if(!e)return ERR.server;if(e.indexOf("wait:")===0)return "Come back in "+fmt(parseInt(e.slice(5),10));if(e.indexOf("too_early")===0)return "Wait a few seconds, then press Verify.";return ERR[e]||"Something went wrong."}
+function fmt(ms){ms=Math.max(0,ms);var s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h<10?"0":"")+h+":"+(m<10?"0":"")+m+":"+(x<10?"0":"")+x}
+function api(action,extra){
+  if(busy)return Promise.resolve(null);busy=true;
+  var body=Object.assign({action:action,initData:tg?tg.initData:""},extra||{});
+  return fetch("/api",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)})
+   .then(function(r){return r.json().catch(function(){return {ok:false,error:"server"}})})
+   .then(function(j){busy=false;if(j.ok){S=j;offset=j.serverNow-Date.now();return j}toast(errText(j.error));return null})
+   .catch(function(){busy=false;toast("No connection.");return null});
+}
+function now(){return Date.now()+offset}
+function haptic(t){try{tg.HapticFeedback.notificationOccurred(t||"success")}catch(e){}}
+var TABS=[["home","🏠","Home"],["tasks","✅","Tasks"],["friends","👥","Friends"],["profile","👤","Profile"]];
+function drawNav(){$("#nav").innerHTML=TABS.map(function(t){return '<button data-t="'+t[0]+'" class="'+(tab===t[0]?"on":"")+'"><span>'+t[1]+'</span>'+t[2]+'</button>'}).join("");
+  document.querySelectorAll("#nav button").forEach(function(b){b.onclick=function(){tab=b.dataset.t;render()}})}
+function header(){return '<div class="top"><h1>🐕 Extra Doge</h1><div class="pill">$EDOGE • Base</div></div>'}
+function home(){
+  var u=S.user,m=S.mining,left=u.nextClaimAt-now(),can=u.canClaim||left<=0;
+  var pend=m.pending, capped=Math.min(100,Math.round(Math.max(0,(now()-u.lastClaim))/(m.capH*3600000)*100));
+  return header()+
+   '<div class="card bal"><div class="l">Your balance</div><div class="n" id="bal">'+coins(u.bal)+'</div><div class="l">EDOGE coins</div></div>'+
+   '<div class="card"><h2>Daily claim</h2><button class="btn" id="claim" '+(can?"":"disabled")+'>'+(can?"Claim "+coins(S.claimAmount)+" coins"+(pend?" + "+coins(pend)+" mined":""):"Next claim in "+fmt(left))+'</button>'+
+   '<div class="mut" style="margin-top:10px">⛏ Mining speed: <b style="color:#fff">'+(m.rate/100).toFixed(2)+'</b> coin/hour • each confirmed friend adds +'+(m.perFriend/100).toFixed(2)+'</div>'+
+   (u.lastClaim&&m.rate?'<div class="bar"><i style="width:'+capped+'%"></i></div><div class="mut" style="margin-top:6px">Mined so far: '+coins(pend)+' (collected on your next claim, max '+m.capH+'h)</div>':'')+'</div>'+
+   '<div class="warn">Coins are in-app points for the planned $EDOGE airdrop. Token is not launched yet; final conversion rules will be announced on official channels. Free to join. We never ask for a seed phrase or private key.</div>';
+}
+function tasks(){
+  return header()+'<div class="card"><h2>Tasks</h2>'+S.tasks.map(function(t){
+    var act="";
+    if(t.done)act='<span class="ok">✔ Done</span>';
+    else if(t.verify==="wallet")act='<button class="sm" data-go="profile">Add</button>';
+    else if(t.startedAt)act='<button class="sm" data-verify="'+t.id+'">Verify</button>';
+    else act='<button class="sm" data-open="'+t.id+'">Go</button>';
+    return '<div class="task"><div class="t">'+esc(t.title)+'<div class="r">+'+coins(t.reward)+' coins</div></div>'+act+'</div>'}).join("")+'</div>'+
+   '<div class="mut">Join Telegram is verified automatically. Other tasks unlock a few seconds after you open the link.</div>';
+}
+function friends(){
+  var f=S.friends, link=BOT_LINK()+"?startapp="+f.code;
+  return header()+'<div class="card"><h2>Invite friends</h2><div class="mut" style="margin-bottom:10px">Your friend gets a welcome bonus. Every friend who makes their first claim raises your mining speed by +'+(S.mining.perFriend/100).toFixed(2)+' coin/hour.</div>'+
+   '<div class="stat"><div><b>'+f.confirmed+'</b><span class="mut">Active friends</span></div><div><b>'+f.pending+'</b><span class="mut">Waiting 1st claim</span></div></div>'+
+   '<div class="mono card" style="background:var(--card2);margin:12px 0 0">'+esc(link)+'</div>'+
+   '<button class="btn" id="share" style="margin-top:10px">Share invite link</button><button class="btn sec" id="copy" style="margin-top:8px">Copy link</button></div>';
+}
+function profile(){
+  var u=S.user, d=new Date(u.joinedAt).toLocaleDateString();
+  return header()+'<div class="card"><div class="row"><div><b style="font-size:18px">'+esc(u.name||"Player")+'</b><div class="mut">'+(u.username?"@"+esc(u.username)+" • ":"")+'ID '+esc(u.id)+'</div></div><div class="pill">since '+esc(d)+'</div></div></div>'+
+   '<div class="card"><div class="stat"><div><b>'+coins(u.bal)+'</b><span class="mut">Balance</span></div><div><b>'+u.claims+'</b><span class="mut">Claims</span></div><div><b>'+S.friends.confirmed+'</b><span class="mut">Friends</span></div><div><b>'+(S.mining.rate/100).toFixed(2)+'/h</b><span class="mut">Mining</span></div></div></div>'+
+   '<div class="card"><h2>Base wallet</h2>'+(u.wallet?'<div class="mono ok">'+esc(u.wallet)+'</div><div class="mut" style="margin-top:6px">Changes used: '+u.walletChanges+' / '+S.maxWalletChanges+'</div>':'<div class="mut">No wallet yet. Submit one to join the airdrop list (+'+coins(S.tasks.filter(function(t){return t.id==="wallet"})[0].reward)+' coins).</div>')+
+   '<input id="addr" placeholder="0x… (public address only)" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="42"><button class="btn" id="saveW">'+(u.wallet?"Update address":"Save address")+'</button>'+
+   '<div class="warn">Only paste your PUBLIC address (0x…). NEVER enter a seed phrase or private key, here or anywhere. We will never ask for it.</div></div>';
+}
+function BOT_LINK(){return window.__BOT_LINK||"https://t.me/Extradogebot/app"}
+function bind(){
+  var c=$("#claim");if(c)c.onclick=function(){api("claim").then(function(j){if(j){haptic();toast("Claimed!");render()}})};
+  document.querySelectorAll("[data-go]").forEach(function(b){b.onclick=function(){tab=b.dataset.go;render()}});
+  document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){
+    var t=S.tasks.filter(function(x){return x.id===b.dataset.open})[0];
+    if(t.link){try{/t\.me\//.test(t.link)&&tg.openTelegramLink?tg.openTelegramLink(t.link):tg.openLink(t.link)}catch(e){window.open(t.link,"_blank")}}
+    api("task_start",{id:t.id}).then(function(j){if(j)render()})}});
+  document.querySelectorAll("[data-verify]").forEach(function(b){b.onclick=function(){api("task_done",{id:b.dataset.verify}).then(function(j){if(j){haptic();toast("Reward added!");render()}})}});
+  var s=$("#share");if(s)s.onclick=function(){var link=BOT_LINK()+"?startapp="+S.friends.code;var u="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent("Claim free EDOGE coins every day 🐕");try{tg.openTelegramLink(u)}catch(e){window.open(u,"_blank")}};
+  var cp=$("#copy");if(cp)cp.onclick=function(){var link=BOT_LINK()+"?startapp="+S.friends.code;(navigator.clipboard?navigator.clipboard.writeText(link):Promise.reject()).then(function(){toast("Link copied")},function(){toast("Long-press the link to copy")})};
+  var w=$("#saveW");if(w)w.onclick=function(){var a=$("#addr").value.trim();if(!/^0x[0-9a-fA-F]{40}$/.test(a)){toast(ERR.bad_address);return}
+    if(!confirm("Save this address?\n"+a+"\nYou can change it only "+S.maxWalletChanges+" times in total."))return;
+    api("wallet",{address:a}).then(function(j){if(j){haptic();toast("Wallet saved");render()}})};
+}
+function render(){drawNav();$("#app").innerHTML=!S?header()+'<div class="card mut">Loading…</div>':(tab==="home"?home():tab==="tasks"?tasks():tab==="friends"?friends():profile());if(S)bind()}
+setInterval(function(){if(S&&tab==="home"){var c=$("#claim");if(!c)return;var left=S.user.nextClaimAt-now();if(left>0){c.textContent="Next claim in "+fmt(left)}else if(c.disabled){render()}}},1000);
+if(!tg||!tg.initData){$("#app").innerHTML=header()+'<div class="card">Please open this app inside Telegram.</div>';$("#nav").style.display="none"}
+else{try{tg.ready();tg.expand();tg.setHeaderColor&&tg.setHeaderColor("#0b0d12");tg.setBackgroundColor&&tg.setBackgroundColor("#0b0d12")}catch(e){}
+ render();api("init").then(function(){render()})}
+})();
+</script></body></html>
+  
