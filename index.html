@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>$EDOGE Mining</title>
+<meta name="theme-color" content="#16112e">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--ink:#16112e;--ink2:#221a45;--paper:#fff6e0;--yellow:#ffc62e;--pink:#ff5c9d;--sky:#58d6ff;--mint:#5ef2b0;--line:3px solid #000}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--ink);color:var(--paper);font:500 16px/1.45 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column;max-width:520px;margin:0 auto}
+main{flex:1;overflow-y:auto;padding:18px 16px 24px}
+h1,h2,h3,.d{font-family:'Arial Black',Impact,system-ui,sans-serif;font-weight:900;letter-spacing:-.01em;line-height:1.05}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.hi{font-size:15px;opacity:.8}
+.card{background:var(--paper);color:#000;border:var(--line);border-radius:20px;padding:16px;box-shadow:5px 5px 0 #000;margin-bottom:16px}
+.card.y{background:var(--yellow)} .card.p{background:var(--pink)} .card.s{background:var(--sky)} .card.m{background:var(--mint)}
+.bal{text-align:center}
+.bal small{display:block;font-weight:700;opacity:.75}
+.bal .n{font:900 52px/1 'Arial Black',Impact,sans-serif;margin:4px 0}
+.dogwrap{display:grid;place-items:center;margin:6px 0 10px}
+.dog{width:190px;height:190px;border-radius:50%;background:var(--yellow);border:var(--line);box-shadow:6px 6px 0 #000;display:grid;place-items:center;font-size:96px;cursor:pointer;user-select:none;transition:transform .1s}
+.dog:active{transform:translate(4px,4px);box-shadow:2px 2px 0 #000}
+.dog.off{filter:grayscale(.7);opacity:.7}
+.btn{display:block;width:100%;font:800 17px system-ui,sans-serif;color:#000;background:var(--yellow);border:var(--line);border-radius:999px;padding:13px 18px;box-shadow:4px 4px 0 #000;cursor:pointer;text-align:center;text-decoration:none}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.btn.pink{background:var(--pink)} .btn.sky{background:var(--sky)} .btn.paper{background:var(--paper)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:var(--ink2);border:2px solid rgba(255,246,224,.2);border-radius:16px;padding:12px;text-align:center}
+.stat b{display:block;font:900 24px 'Arial Black',sans-serif}
+.stat span{font-size:13px;opacity:.75}
+h2{font-size:26px;margin-bottom:12px}
+.task{display:flex;align-items:center;gap:12px;background:var(--ink2);border:2px solid rgba(255,246,224,.2);border-radius:16px;padding:12px;margin-bottom:10px}
+.task .ic{font-size:28px}
+.task .t{flex:1} .task .t b{display:block} .task .t small{opacity:.7}
+.task .btn{width:auto;padding:8px 14px;font-size:14px}
+.note{font-size:13px;opacity:.7;margin-top:8px}
+input{width:100%;font:600 16px ui-monospace,Menlo,monospace;padding:13px 14px;border-radius:14px;border:var(--line);background:#fff;color:#000;margin:10px 0}
+nav{display:flex;background:var(--ink2);border-top:3px solid #000;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;color:var(--paper);padding:10px 4px 9px;font:700 12px system-ui,sans-serif;opacity:.6;cursor:pointer}
+nav button .e{display:block;font-size:22px;margin-bottom:2px}
+nav button.on{opacity:1;color:var(--yellow)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:#000;color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;font-size:15px;opacity:0;transition:.25s;pointer-events:none;max-width:90%;text-align:center;z-index:9}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.tab{display:none} .tab.on{display:block}
+.pop{animation:pop .5s}
+@keyframes pop{30%{transform:scale(1.18)}}
+.loading{height:100%;display:grid;place-items:center;font-size:44px}
+@media(prefers-reduced-motion:reduce){.pop{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="main"><div class="loading">🐕</div></main>
+  <nav id="nav" hidden>
+    <button data-t="mine" class="on"><span class="e">⛏️</span>Mine</button>
+    <button data-t="tasks"><span class="e">✅</span>Tasks</button>
+    <button data-t="friends"><span class="e">👥</span>Friends</button>
+    <button data-t="me"><span class="e">👤</span>Profile</button>
+  </nav>
+</div>
+<div id="toast"></div>
+
+<script type="module">
+/* ============ SETTINGS (edit here) ============ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAt5L0m5icdq_YcvDnLm9ubd3_m3TtPS44",
+  authDomain: "extra-doge-coin.firebaseapp.com",
+  databaseURL: "https://extra-doge-coin-default-rtdb.firebaseio.com",
+  projectId: "extra-doge-coin",
+  storageBucket: "extra-doge-coin.firebasestorage.app",
+  messagingSenderId: "431394704160",
+  appId: "1:431394704160:web:1e899c8e6d4dcf891aa545"
+};
+/* ---- paste your links here (a task shows up only when its link is filled in) ---- */
+const TELEGRAM_CHANNEL_LINK = "https://t.me/extradoge_coin";
+const X_ACCOUNT_LINK        = "https://x.com/extradoge_coin";
+const YOUTUBE_LINK          = "https://youtube.com/@extradogecoin";
+const WEBSITE_LINK          = "https://www.extradogecoin.xyz";
+
+const BOT_USERNAME = "Extradogebot";
+const APP_SHORT_NAME = "app";                 // t.me/Extradogebot/app
+const BASE_REWARD = 5;                        // coins per daily claim
+const PER_INVITE_BONUS = 0.5;                 // extra coins per claim for every invited friend
+const MAX_INVITES_COUNTED = 50;
+const WELCOME_BONUS = 5;
+const COOLDOWN_MS = 24*60*60*1000;
+const TASK_REWARD = 5;                        // coins per task, one time each
+const TASKS = [
+  {id:"tg",  icon:"✈️", title:"Join our Telegram channel", reward:TASK_REWARD, url:TELEGRAM_CHANNEL_LINK},
+  {id:"x",   icon:"𝕏",  title:"Follow us on X",            reward:TASK_REWARD, url:X_ACCOUNT_LINK},
+  {id:"yt",  icon:"▶️", title:"Subscribe on YouTube",      reward:TASK_REWARD, url:YOUTUBE_LINK},
+  {id:"web", icon:"🌐", title:"Visit our website",         reward:TASK_REWARD, url:WEBSITE_LINK}
+];
+/* =============================================== */
+
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || null;
+const qs = new URLSearchParams(location.search);
+const myTgId = String(tgUser ? tgUser.id : (qs.get("uid") || "demo"));
+const myName = tgUser ? (tgUser.first_name || "Friend") : "Friend";
+const startSrc=[];
+function readStart(){
+  let v="";
+  try{v=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param)||"";if(v)startSrc.push("unsafe")}catch(e){}
+  if(!v){try{v=new URLSearchParams((tg&&tg.initData)||"").get("start_param")||"";if(v)startSrc.push("initData")}catch(e){}}
+  if(!v){try{v=new URLSearchParams(location.hash.slice(1)).get("tgWebAppStartParam")||"";if(v)startSrc.push("hash")}catch(e){}}
+  if(!v){try{v=qs.get("tgWebAppStartParam")||qs.get("startapp")||qs.get("ref")||"";if(v)startSrc.push("query")}catch(e){}}
+  return v;
+}
+const startParam = String(readStart()).replace(/[^A-Za-z0-9_-]/g,"").slice(0,40);
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const round1 = n => Math.round(n*10)/10;
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2200)}
+function buzz(){try{tg&&tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred("success")}catch(e){}}
+
+/* ---------- storage: Firebase if configured, otherwise this device only ---------- */
+let store, mode;
+async function makeStore(){
+  if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId) {
+    try {
+      const V="10.14.1", B=`https://www.gstatic.com/firebasejs/${V}/`;
+      const {initializeApp}=await import(B+"firebase-app.js");
+      const {getAuth,signInAnonymously}=await import(B+"firebase-auth.js");
+      const {getFirestore,doc,getDoc,setDoc,updateDoc,collection,query,where,getDocs}=await import(B+"firebase-firestore.js");
+      // One Firebase app (and therefore one saved login) per Telegram account, so several accounts on one phone never overwrite each other.
+      const app=initializeApp(FIREBASE_CONFIG,"tg"+myTgId), auth=getAuth(app), db=getFirestore(app);
+      await auth.authStateReady();
+      if(!auth.currentUser) await signInAnonymously(auth);
+      const uid=auth.currentUser.uid;
+      const uref=doc(db,"users",uid);
+      mode="cloud";
+      return {
+        async load(){const s=await getDoc(uref);return s.exists()?s.data():null},
+        async create(d){await setDoc(uref,d)},
+        async patch(p){await updateDoc(uref,p)},
+        async addRef(referrer){await setDoc(doc(db,"refs",uid),{referrer:String(referrer),child:uid,at:Date.now()})},
+        async refCount(){const s=await getDocs(query(collection(db,"refs"),where("referrer","==",myTgId)));return s.size}
+      };
+    } catch(e){ console.error("Firebase failed, using local mode", e); }
+  }
+  mode="local";
+  const K="edoge_mining_v1_"+myTgId;
+  const get=()=>{try{return JSON.parse(localStorage.getItem(K))}catch(e){return null}};
+  const put=d=>{try{localStorage.setItem(K,JSON.stringify(d))}catch(e){}};
+  let mem=get();
+  return {
+    async load(){return mem},
+    async create(d){mem=d;put(mem)},
+    async patch(p){mem=Object.assign({},mem,p);put(mem)},
+    async addRef(){},
+    async refCount(){return 0}
+  };
+}
+
+/* ---------- state ---------- */
+let S=null, refs=0, tick=null;
+const dbg={ref:"-"};
+const rewardNow = () => round1(BASE_REWARD + Math.min(refs,MAX_INVITES_COUNTED)*PER_INVITE_BONUS);
+const nextAt = () => (S.lastClaim||0)+COOLDOWN_MS;
+const canClaim = () => Date.now() >= nextAt();
+const inviteLink = () => `https://t.me/${BOT_USERNAME}/${APP_SHORT_NAME}?startapp=${myTgId}`;
+function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000));const h=String(Math.floor(s/3600)).padStart(2,"0"),m=String(Math.floor(s%3600/60)).padStart(2,"0"),x=String(s%60).padStart(2,"0");return `${h}:${m}:${x}`}
+
+/* ---------- views ---------- */
+function render(){
+  const tasks=TASKS.filter(t=>t.url);
+  $("#main").innerHTML=`
+  <section class="tab on" id="t-mine">
+    <div class="top"><div><div class="hi">Hi, ${esc(myName)} 👋</div><h1 style="font-size:24px">$EDOGE Mining</h1></div></div>
+    <div class="card y bal"><small>Your coins</small><div class="n" id="bal">${S.coins}</div><small>Points collected in the app. Not tokens yet.</small></div>
+    <div class="dogwrap"><div class="dog" id="dog" role="button" aria-label="Claim">🐕</div></div>
+    <button class="btn" id="claim"></button>
+    <p class="note" style="text-align:center" id="rate"></p>
+    <div class="grid2" style="margin-top:16px">
+      <div class="stat"><b id="s-ref">${refs}</b><span>Friends invited</span></div>
+      <div class="stat"><b id="s-rate">+${rewardNow()}</b><span>Coins per claim</span></div>
+    </div>
+  </section>
+
+  <section class="tab" id="t-tasks">
+    <h2>Tasks</h2>
+    ${tasks.map(t=>{const done=S.tasks&&S.tasks[t.id];return `
+      <div class="task"><div class="ic">${t.icon}</div><div class="t"><b>${esc(t.title)}</b><small>+${t.reward} coins</small></div>
+      ${done?`<span>✅</span>`:`<button class="btn sky" data-task="${t.id}">Go</button>`}</div>`}).join("")||'<p class="note">New tasks are coming soon.</p>'}
+    <p class="note">Open the link, wait a few seconds, then tap Claim.</p>
+  </section>
+
+  <section class="tab" id="t-friends">
+    <h2>Invite friends</h2>
+    <div class="card s"><p><b>Every friend who joins with your link adds +${PER_INVITE_BONUS} coins to every daily claim you make.</b></p>
+    <p class="note" style="color:#000;opacity:.7">Up to ${MAX_INVITES_COUNTED} friends count. Fake or duplicate accounts are removed before any airdrop.</p></div>
+    <div class="grid2" style="margin-bottom:16px"><div class="stat"><b>${refs}</b><span>Friends</span></div><div class="stat"><b>+${rewardNow()}</b><span>Per claim</span></div></div>
+    <input id="link" readonly value="${esc(inviteLink())}">
+    <button class="btn" id="copy">Copy my invite link</button>
+    <button class="btn pink" id="share" style="margin-top:12px">Share on Telegram</button>
+  </section>
+
+  <section class="tab" id="t-me">
+    <h2>Profile</h2>
+    <div class="card"><div class="row"><b>${esc(myName)}</b><span>ID ${esc(myTgId)}</span></div>
+      <div class="row" style="margin-top:8px"><span>Coins</span><b id="p-bal">${S.coins}</b></div>
+      <div class="row"><span>Friends invited</span><b>${refs}</b></div></div>
+    <div class="card m"><b>Base wallet address</b>
+      <p class="note" style="color:#000;opacity:.75">For the future airdrop. Use a Base / Ethereum-style address that starts with 0x. Never share your seed phrase or private key with anyone.</p>
+      <input id="wallet" placeholder="0x..." value="${esc(S.wallet||"")}" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn" id="savew">Save wallet</button></div>
+    <p class="note">The $EDOGE token is not launched yet and there is no contract address. Coins here are app points. Nothing here is financial advice, and we never ask for money, a seed phrase or a private key.</p>
+    ${mode==="local"?'<p class="note">Test mode: data is saved on this device only.</p>':""}
+    <p class="note" style="font-size:11px;opacity:.45">Debug: invite code = ${esc(startParam||"none")} (${esc(startSrc.join(",")||"not found")}) | hash = ${esc(location.hash.slice(0,40)||"empty")} | referredBy = ${esc(S.referredBy||"none")} | save = ${esc(dbg.ref)} | mode = ${esc(mode)} | acct = ${esc(myTgId)}</p>
+  </section>`;
+  bind(); paintClaim();
+}
+function paintClaim(){
+  const b=$("#claim"),d=$("#dog"),r=$("#rate");if(!b)return;
+  if(canClaim()){b.disabled=false;b.textContent=`Claim +${rewardNow()} coins`;d.classList.remove("off");r.textContent="Your daily coins are ready.";}
+  else{b.disabled=true;b.textContent="Next claim in "+fmt(nextAt()-Date.now());d.classList.add("off");r.textContent="Come back every 24 hours.";}
+}
+function setCoins(){["#bal","#p-bal"].forEach(s=>{const e=$(s);if(e)e.textContent=S.coins});const e=$("#bal");if(e){e.classList.remove("pop");void e.offsetWidth;e.classList.add("pop")}}
+
+async function claim(){
+  if(!canClaim()) return toast("Not ready yet");
+  const add=rewardNow(), coins=round1((S.coins||0)+add), lastClaim=Date.now();
+  try{await store.patch({coins,lastClaim});S.coins=coins;S.lastClaim=lastClaim;setCoins();paintClaim();buzz();toast(`+${add} coins`)}
+  catch(e){console.error(e);toast("Could not save. Check your internet.")}
+}
+const pending={};
+function bind(){
+  $("#claim").onclick=claim; $("#dog").onclick=claim;
+  document.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>taskClick(b));
+  const c=$("#copy"); if(c) c.onclick=copyLink;
+  const sh=$("#share"); if(sh) sh.onclick=()=>{const u="https://t.me/share/url?url="+encodeURIComponent(inviteLink())+"&text="+encodeURIComponent("Join me on $EDOGE mining 🐕 Free daily coins!");
+    try{tg&&tg.openTelegramLink?tg.openTelegramLink(u):window.open(u,"_blank")}catch(e){window.open(u,"_blank")}};
+  const w=$("#savew"); if(w) w.onclick=saveWallet;
+}
+function openUrl(u){try{if(tg&&u.startsWith("https://t.me")&&tg.openTelegramLink)tg.openTelegramLink(u);else if(tg&&tg.openLink)tg.openLink(u);else window.open(u,"_blank")}catch(e){window.open(u,"_blank")}}
+async function taskClick(btn){
+  const t=TASKS.find(x=>x.id===btn.dataset.task); if(!t) return;
+  if(!pending[t.id]){pending[t.id]=Date.now();openUrl(t.url);btn.textContent="Claim";btn.classList.remove("sky");btn.classList.add("pink");return;}
+  if(Date.now()-pending[t.id]<8000) return toast("Finish the task first, then tap Claim");
+  const tasks=Object.assign({},S.tasks||{},{[t.id]:true}), coins=round1((S.coins||0)+t.reward);
+  try{await store.patch({tasks,coins});S.tasks=tasks;S.coins=coins;buzz();toast(`+${t.reward} coins`);render();switchTab("tasks")}
+  catch(e){toast("Could not save. Check your internet.")}
+}
+async function copyLink(){
+  const l=inviteLink();
+  try{await navigator.clipboard.writeText(l);toast("Link copied")}catch(e){const i=$("#link");i.select();try{document.execCommand("copy");toast("Link copied")}catch(_){toast("Press and hold the link to copy")}}
+}
+async function saveWallet(){
+  const v=$("#wallet").value.trim();
+  if(!/^0x[a-fA-F0-9]{40}$/.test(v)) return toast("Enter a valid address: 0x + 40 characters");
+  try{await store.patch({wallet:v});S.wallet=v;buzz();toast("Wallet saved")}catch(e){toast("Could not save. Check your internet.")}
+}
+function switchTab(t){
+  document.querySelectorAll(".tab").forEach(e=>e.classList.toggle("on",e.id==="t-"+t));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>switchTab(b.dataset.t));
+
+/* ---------- start ---------- */
+(async()=>{
+  try{
+    store=await makeStore();
+    S=await store.load();
+    if(!S){
+      const ref=(startParam&&startParam!==myTgId)?startParam:"";
+      S={tgId:myTgId,name:myName,coins:WELCOME_BONUS,lastClaim:0,tasks:{},wallet:"",referredBy:ref,createdAt:Date.now()};
+      await store.create(S);
+      if(ref){try{await store.addRef(ref);dbg.ref="saved"}catch(e){console.warn("ref failed",e);dbg.ref="error: "+(e&&e.code||e&&e.message||e)}}
+    }
+    try{refs=await store.refCount()}catch(e){refs=0}
+    $("#nav").hidden=false; render();
+    tick=setInterval(paintClaim,1000);
+    window.__app={S:()=>S,mode:()=>mode};
+  }catch(e){
+    console.error(e);
+    $("#main").innerHTML='<div class="card"><b>Could not start.</b><p class="note" style="color:#000">Please close and open the app again.</p></div>';
+  }
+})();
+</script>
+</body>
+</html>
