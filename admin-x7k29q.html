@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>EDOGE Admin</title>
+<style>:root{--bg:#141029;--card:#211a44;--line:#3a3166;--y:#ffc72c;--t:#fff7e6;--m:#9a93c4;--g:#35d08a;--r:#ff5d73}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:14px 14px 60px;max-width:680px;margin-inline:auto}
+h1{font-size:22px;margin:6px 0}h2{font-size:17px;margin:0 0 10px}
+.sub,small{color:var(--m);font-size:13px}small{display:block;word-break:break-all}
+.c,.b{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+label{display:block;font-size:13px;color:var(--m);margin:10px 0 4px}
+input,textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:#150f33;color:var(--t);font:inherit}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 14px;background:var(--y);color:#000;cursor:pointer}
+button.s{background:#2d2560;color:var(--t);border:1px solid var(--line)}button.d{background:var(--r);color:#fff}button:disabled{opacity:.5}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+.col{display:flex;flex-direction:column;gap:6px}
+.tabs{display:flex;gap:6px;margin:10px 0 14px;overflow-x:auto}.tabs button{flex:1;min-width:76px;background:#2d2560;color:var(--t);border:1px solid var(--line);padding:10px 6px}.tabs button.on{background:var(--y);color:#000}
+.item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.item:first-child{border-top:0}
+.item .ck{margin:0;flex:0 0 auto}.item .ck input{width:22px;height:22px}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat div{background:#150f33;border-radius:12px;padding:12px;text-align:center;font-size:12px}.stat b{font-size:20px;display:block}
+.ok{color:var(--g)}.bad{color:var(--r)}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#000;color:#fff;padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;max-width:90%;text-align:center;z-index:50}#toast.show{opacity:1}
+</style></head><body>
+<div class="b" id="gate" style="max-width:420px;margin:40px auto"><h1 style="margin-top:0">🐕 EDOGE Admin</h1><p class="sub" id="msg">Owner login only.</p>
+<div id="form" hidden><label>Email</label><input id="em" type="email" autocomplete="username" autocapitalize="off" spellcheck="false">
+<label>Password</label><input id="pw" type="password" autocomplete="current-password">
+<button id="go" style="width:100%;margin-top:14px">Log in</button></div></div>
+<div id="app" hidden><div id="adm">
+  <div class="row" style="margin-bottom:4px"><h1>🐕 EDOGE Admin</h1><span id="appstate" style="flex:0 0 auto;font-size:13px;font-weight:700"></span></div>
+  <div class="tabs" id="tabs"><button data-t="ctl" class="on">Control</button><button data-t="rew">Rewards</button><button data-t="usr">Users</button><button data-t="tsk">Tasks</button><button data-t="con">Contest</button></div>
+
+  <section id="p-ctl">
+    <div class="c"><div class="stat"><div><b id="n-users">-</b>Users</div><div><b id="n-refs">-</b>Invites</div><div><b id="n-coins">-</b>Total coins</div></div><button class="s" id="st-reload" style="width:100%;margin-top:10px">Refresh numbers</button></div>
+    <div class="c"><h2>Switches</h2><div id="sw"></div><p class="sub" style="margin-top:8px">Stopping the whole app shows users a maintenance screen. Users and coins are kept safe.</p></div>
+    <div class="c"><h2>Coin speed</h2>
+      <label>Base coins per claim</label><input id="c-base" type="number" step="0.1" min="0" max="1000">
+      <label>Extra coins per invited friend</label><input id="c-inv" type="number" step="0.1" min="0" max="100">
+      <label>Claim cooldown (hours, min 1). Lower = faster</label><input id="c-cd" type="number" step="0.5" min="1" max="720">
+      <label>Announcement on the Mine screen (optional)</label><input id="c-msg" maxlength="200" placeholder="e.g. New game this week!">
+      <button id="c-save" style="margin-top:14px;width:100%">Save speed &amp; announcement</button></div>
+  </section>
+
+  <section id="p-rew" hidden>
+    <div class="c"><h2>Send / remove coins</h2><label style="margin-top:0">Telegram @username or ID number</label>
+      <div class="row"><input id="r-q" placeholder="@username or 123456789" autocapitalize="off" autocomplete="off"><button id="r-find" style="flex:0 0 auto">Find</button></div><div id="r-res"></div></div>
+    <div class="c"><h2>Send to many</h2><label style="margin-top:0">One @username or ID per line</label><textarea id="b-list" rows="5" placeholder="@user1&#10;@user2&#10;123456789"></textarea>
+      <div class="row"><div><label>Coins each</label><input id="b-n" type="number" value="100"></div><div><label>Note</label><input id="b-note" maxlength="60" placeholder="Giveaway winner"></div></div>
+      <button id="b-go" style="width:100%;margin-top:12px">Send to all</button><div id="b-res" style="margin-top:8px"></div></div>
+  </section>
+
+  <section id="p-usr" hidden>
+    <div class="c"><h2>Users</h2><input id="u-q" placeholder="Search name, @username or ID" autocapitalize="off">
+      <div class="row" style="margin-top:8px"><button class="s" id="u-sel-inactive">Select never-claimed</button><button class="s" id="u-sel-none">Clear</button></div>
+      <div class="sub" id="u-count" style="margin-top:8px"></div><div id="u-list"></div>
+      <button class="d" id="u-del" style="width:100%;margin-top:10px">Delete selected users</button>
+      <button class="s" id="u-reload" style="width:100%;margin-top:8px">Reload list</button></div>
+  </section>
+
+  <section id="p-tsk" hidden>
+    <div class="c"><h2>Add a task</h2>
+      <div class="row"><div style="flex:0 0 70px"><label style="margin-top:0">Icon</label><input id="k-ic" value="⭐" maxlength="4"></div><div><label style="margin-top:0">Title</label><input id="k-title" maxlength="80" placeholder="Retweet our pinned post"></div></div>
+      <label>Link (https://...)</label><input id="k-url" placeholder="https://x.com/...">
+      <div class="row"><div><label>Reward (max 100)</label><input id="k-rw" type="number" min="1" max="100" value="5"></div><div><label>For (blank = everyone)</label><input id="k-for" placeholder="@username" autocapitalize="off"></div></div>
+      <button id="k-add" style="margin-top:14px;width:100%">Add task</button></div>
+    <div class="c"><h2>Your tasks</h2><div id="k-list"></div></div>
+  </section>
+
+  <section id="p-con" hidden>
+    <div class="c"><h2>Invite contest</h2><p class="sub">Counts invites from the last N days and shows the top 10.</p>
+      <label>Days</label><input id="t-days" type="number" value="7" min="1" max="90">
+      <button id="t-go" style="width:100%;margin-top:12px">Count top inviters</button><div id="t-res" style="margin-top:10px"></div></div>
+  </section>
+</div>
+<button class="s" id="so" style="width:100%">Sign out</button></div>
+<div id="toast"></div>
+<script type="module">
+const toast=m=>{const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2800)};
+/* EDOGE admin logic. Gets the Firestore handle and functions from the page. */
+function mountAdmin(db,F,toastFn){
+const {doc,getDoc,setDoc,updateDoc,addDoc,deleteDoc,collection,query,where,orderBy,limit,getDocs,getAggregateFromServer,sum,count,increment}=F;
+const $=s=>document.querySelector("#adm "+s), $$=s=>document.querySelectorAll("#adm "+s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const r1=n=>Math.round(n*10)/10, err=e=>(e&&e.code)||(e&&e.message)||String(e), toast=m=>toastFn(m);
+const cfgRef=doc(db,"config","app");
+let CFG={};
+
+/* tabs */
+$$("#tabs button").forEach(b=>b.onclick=()=>{
+  $$("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  ["ctl","rew","usr","tsk","con"].forEach(t=>$("#p-"+t).hidden=(t!==b.dataset.t));
+  if(b.dataset.t==="usr"&&!usrLoaded)loadUsers();
+});
+
+/* ===== CONTROL ===== */
+async function loadCfg(){
+  try{const s=await getDoc(cfgRef);CFG=s.exists()?s.data():{}}catch(e){toast("Settings: "+err(e));CFG={}}
+  paintSwitches();
+  $("#c-base").value=CFG.baseReward??5;$("#c-inv").value=CFG.perInviteBonus??0.5;
+  $("#c-cd").value=r1((CFG.cooldownMs??86400000)/3600000);$("#c-msg").value=CFG.message||"";
+}
+const FLAGS=[["appOn","Whole app"],["miningOn","Mining (daily claim)"],["gamesOn","Games (Spin, Catcher, Scam)"],["cardsOn","Cards shop"]];
+function paintSwitches(){
+  $("#sw").innerHTML=FLAGS.map(([k,n])=>{const on=CFG[k]!==false;return `<div class="item"><div><b>${n}</b><small class="${on?"ok":"bad"}">${on?"ON (running)":"OFF (stopped)"}</small></div><button class="${on?"d":""}" data-f="${k}">${on?"Stop":"Start"}</button></div>`}).join("");
+  $$("[data-f]").forEach(b=>b.onclick=()=>toggleFlag(b.dataset.f));
+  const app=CFG.appOn!==false;
+  $("#appstate").innerHTML=app?'<span class="ok">● App is RUNNING</span>':'<span class="bad">● App is STOPPED (users see a maintenance screen)</span>';
+}
+async function saveCfg(extra){
+  const next=Object.assign({appOn:CFG.appOn!==false,miningOn:CFG.miningOn!==false,gamesOn:CFG.gamesOn!==false,cardsOn:CFG.cardsOn!==false,
+    baseReward:CFG.baseReward??5,perInviteBonus:CFG.perInviteBonus??0.5,cooldownMs:CFG.cooldownMs??86400000,message:CFG.message||""},extra||{},{updatedAt:Date.now()});
+  await setDoc(cfgRef,next);CFG=next;
+}
+async function toggleFlag(k){
+  const turnOn=CFG[k]===false, name=FLAGS.find(f=>f[0]===k)[1];
+  if(!turnOn&&!confirm("Stop: "+name+"?")) return;
+  try{await saveCfg({[k]:turnOn});paintSwitches();toast(name+(turnOn?" started ✅":" stopped ⏸"))}catch(e){toast("Failed: "+err(e))}
+}
+$("#c-save").onclick=async()=>{
+  const base=Number($("#c-base").value),inv=Number($("#c-inv").value),cd=Number($("#c-cd").value);
+  if(!(base>=0&&base<=1000)) return toast("Base coins must be 0 to 1000");
+  if(!(inv>=0&&inv<=100)) return toast("Friend bonus must be 0 to 100");
+  if(!(cd>=1&&cd<=720)) return toast("Cooldown must be 1 to 720 hours");
+  try{await saveCfg({baseReward:base,perInviteBonus:inv,cooldownMs:Math.round(cd*3600000),message:$("#c-msg").value.trim().slice(0,200)});toast("Saved ✅")}catch(e){toast("Failed: "+err(e))}
+};
+async function loadStats(){
+  try{
+    const u=await getAggregateFromServer(collection(db,"users"),{n:count(),coins:sum("coins")});
+    const r=await getAggregateFromServer(collection(db,"refs"),{n:count()});
+    $("#n-users").textContent=u.data().n;$("#n-coins").textContent=Math.round(u.data().coins||0).toLocaleString("en-US");$("#n-refs").textContent=r.data().n;
+  }catch(e){toast("Stats: "+err(e))}
+}
+$("#st-reload").onclick=loadStats;
+
+/* ===== REWARDS ===== */
+let cur=null;
+async function findUser(q){
+  q=q.trim().replace(/^@/,"").toLowerCase(); if(!q) return [];
+  const f=/^\d+$/.test(q)?where("tgId","==",q):where("username","==",q);
+  const s=await getDocs(query(collection(db,"users"),f,limit(5)));
+  return s.docs.map(d=>({id:d.id,...d.data()}));
+}
+const ucard=u=>`<div style="padding:6px 0"><b>${esc(u.name||"?")}</b> ${u.username?"@"+esc(u.username):""}<small>Telegram ID ${esc(u.tgId)} | coins <b>${esc(u.coins)}</b> | invited by ${esc(u.referredBy||"nobody")}</small></div>`;
+$("#r-find").onclick=()=>doFind($("#r-q").value);
+async function doFind(q){
+  $("#r-res").innerHTML="";cur=null;
+  try{const l=await findUser(q);
+    if(!l.length){$("#r-res").innerHTML='<p class="bad">No user found. The user must open the app once (usernames are saved when they open the latest version).</p>';return}
+    if(l.length>1){$("#r-res").innerHTML='<p class="sub">Several matched, tap one:</p>'+l.map(u=>`<div class="item"><div>${ucard(u)}</div><button class="s" data-pick="${esc(u.id)}">Select</button></div>`).join("");
+      $$("[data-pick]").forEach(b=>b.onclick=()=>showUser(l.find(x=>x.id===b.dataset.pick)));return}
+    showUser(l[0]);
+  }catch(e){$("#r-res").innerHTML='<p class="bad">'+esc(err(e))+'</p>'}
+}
+function showUser(u){
+  cur=u;
+  $("#r-res").innerHTML=ucard(u)+`<label>Coins to add (minus number removes)</label><input id="g-n" type="number" step="0.1" value="100">
+    <label>Note shown to the user (optional)</label><input id="g-note" maxlength="60" placeholder="e.g. Contest winner">
+    <button id="g-go" style="width:100%;margin-top:12px">Send coins</button>
+    <div class="row" style="margin-top:10px"><button class="s" id="g-reset">Reset claim timer</button><button class="d" id="g-del">Delete user</button></div>`;
+  $("#g-go").onclick=()=>give(cur,Number($("#g-n").value),$("#g-note").value.trim().slice(0,60),true);
+  $("#g-reset").onclick=async()=>{try{await updateDoc(doc(db,"users",cur.id),{lastClaim:0});toast("Claim timer reset ✅")}catch(e){toast(err(e))}};
+  $("#g-del").onclick=async()=>{if(!confirm("Delete this user and their invite record?")) return;try{await delUser(cur);toast("User deleted");$("#r-res").innerHTML="";cur=null;loadStats()}catch(e){toast(err(e))}};
+}
+async function give(u,n,note,ask){
+  n=r1(n); if(!isFinite(n)||n===0){toast("Enter a number");return false}
+  if(Math.abs(n)>1000000){toast("Too large");return false}
+  const fresh=await getDoc(doc(db,"users",u.id)), have=Number(fresh.data().coins)||0;
+  if(have+n<0){toast("User only has "+have+" coins");return false}
+  if(ask&&!confirm((n>0?"Send ":"Remove ")+Math.abs(n)+" coins "+(n>0?"to ":"from ")+(u.username?"@"+u.username:u.name)+"?")) return false;
+  try{
+    await updateDoc(doc(db,"users",u.id),{coins:increment(n),lastGift:{coins:n,note,at:Date.now()}});
+    await addDoc(collection(db,"grantlog"),{to:u.id,tgId:u.tgId,username:u.username||"",coins:n,note,at:Date.now()});
+    if(ask){toast("Done ✅ "+(n>0?"+":"")+n+" coins");const a=await getDoc(doc(db,"users",u.id));showUser({id:a.id,...a.data()})}
+    return true;
+  }catch(e){toast("Failed: "+err(e));return false}
+}
+async function delUser(u){
+  const rs=await getDocs(query(collection(db,"refs"),where("child","==",u.id)));
+  for(const d of rs.docs) await deleteDoc(d.ref);
+  try{await deleteDoc(doc(db,"lb",u.id))}catch(e){}
+  await deleteDoc(doc(db,"users",u.id));
+}
+/* bulk give */
+$("#b-go").onclick=async()=>{
+  const lines=$("#b-list").value.split(/[\n,\s]+/).map(x=>x.trim().replace(/^@/,"").toLowerCase()).filter(Boolean);
+  const n=Number($("#b-n").value), note=$("#b-note").value.trim().slice(0,60);
+  if(!lines.length) return toast("Add usernames or IDs");
+  if(lines.length>300) return toast("Max 300 at a time");
+  if(!(n>0&&n<=100000)) return toast("Coins must be 1 to 100000");
+  if(!confirm("Send "+n+" coins to "+lines.length+" users?")) return;
+  let ok=0,miss=[];$("#b-res").textContent="Working...";
+  for(const q of lines){
+    try{const l=await findUser(q);if(!l.length){miss.push(q);continue}if(await give(l[0],n,note,false))ok++}catch(e){miss.push(q)}
+  }
+  $("#b-res").innerHTML=`<span class="ok">Sent to ${ok} users.</span>`+(miss.length?`<br><span class="bad">Not found / failed (${miss.length}): ${esc(miss.join(", "))}</span>`:"");
+};
+
+/* ===== USERS ===== */
+let usrLoaded=false, usrRows=[];
+async function loadUsers(){
+  usrLoaded=true;$("#u-list").innerHTML='<p class="sub">Loading...</p>';
+  try{const s=await getDocs(query(collection(db,"users"),orderBy("createdAt","desc"),limit(200)));usrRows=s.docs.map(d=>({id:d.id,...d.data()}));paintUsers()}
+  catch(e){$("#u-list").innerHTML='<p class="bad">'+esc(err(e))+'</p>'}
+}
+function paintUsers(){
+  const q=$("#u-q").value.trim().replace(/^@/,"").toLowerCase();
+  const rows=usrRows.filter(u=>!q||String(u.username||"").includes(q)||String(u.tgId).includes(q)||String(u.name||"").toLowerCase().includes(q));
+  $("#u-count").textContent=rows.length+" shown of "+usrRows.length+" loaded";
+  $("#u-list").innerHTML=rows.length?rows.map(u=>`<div class="item"><label class="ck"><input type="checkbox" data-sel="${esc(u.id)}"></label><div style="flex:1"><b>${esc(u.name||"?")}</b> ${u.username?"@"+esc(u.username):""}<small>ID ${esc(u.tgId)} | ${esc(u.coins)} coins | ${u.lastClaim?"claimed":"never claimed"} | by ${esc(u.referredBy||"-")}<br>${new Date(u.createdAt||0).toLocaleString()}</small></div><button class="s" data-rw="${esc(u.tgId)}">Reward</button></div>`).join(""):'<p class="sub">No users.</p>';
+  $$("[data-rw]").forEach(b=>b.onclick=()=>{$('#tabs [data-t="rew"]').click();$("#r-q").value=b.dataset.rw;doFind(b.dataset.rw)});
+}
+$("#u-q").oninput=paintUsers;$("#u-reload").onclick=loadUsers;
+$("#u-sel-inactive").onclick=()=>{
+  const ids=new Set(usrRows.filter(u=>!u.lastClaim&&Number(u.coins)<=5&&!Object.keys(u.tasks||{}).length).map(u=>u.id));
+  $$("[data-sel]").forEach(c=>c.checked=ids.has(c.dataset.sel));
+  toast(ids.size+" users who never claimed and have 5 coins or less. Check them before deleting.");
+};
+$("#u-sel-none").onclick=()=>$$("[data-sel]").forEach(c=>c.checked=false);
+$("#u-del").onclick=async()=>{
+  const ids=[...$$("[data-sel]")].filter(c=>c.checked).map(c=>c.dataset.sel);
+  if(!ids.length) return toast("Select users first");
+  if(!confirm("Delete "+ids.length+" selected users? This cannot be undone.")) return;
+  let ok=0;
+  for(const id of ids){const u=usrRows.find(x=>x.id===id);try{await delUser(u);ok++}catch(e){console.warn(e)}}
+  toast("Deleted "+ok+" of "+ids.length);await loadUsers();loadStats();
+};
+
+/* ===== TASKS ===== */
+const taskCol=collection(db,"tasks");
+$("#k-add").onclick=async()=>{
+  const title=$("#k-title").value.trim(),url=$("#k-url").value.trim(),rw=Number($("#k-rw").value),ic=($("#k-ic").value.trim()||"⭐").slice(0,4);
+  const forU=$("#k-for").value.trim().replace(/^@/,"").toLowerCase().replace(/[^a-z0-9_]/g,"");
+  if(!title) return toast("Write a title");
+  if(!/^https:\/\/\S+$/.test(url)) return toast("Link must start with https://");
+  if(!(rw>=1&&rw<=100)) return toast("Reward must be 1 to 100");
+  try{await addDoc(taskCol,{title,url,reward:rw,icon:ic,forUsername:forU,active:true,createdAt:Date.now()});$("#k-title").value="";$("#k-url").value="";$("#k-for").value="";toast("Task added ✅");loadTasks()}
+  catch(e){toast("Failed: "+err(e))}
+};
+async function loadTasks(){
+  try{const s=await getDocs(query(taskCol,orderBy("createdAt","desc"),limit(100)));
+    $("#k-list").innerHTML=s.empty?'<p class="sub">No tasks yet.</p>':s.docs.map(d=>{const t=d.data();return `<div class="item"><div style="flex:1">${esc(t.icon)} <b>${esc(t.title)}</b> <span class="${t.active?"ok":"bad"}">${t.active?"live":"hidden"}</span><small>+${esc(t.reward)} coins | ${t.forUsername?"only @"+esc(t.forUsername):"everyone"}<br>${esc(t.url)}</small></div><div class="col"><button class="s" data-tg="${d.id}" data-on="${t.active?1:0}">${t.active?"Hide":"Show"}</button><button class="d" data-rm="${d.id}">Delete</button></div></div>`}).join("");
+    $$("[data-tg]").forEach(b=>b.onclick=async()=>{try{await updateDoc(doc(db,"tasks",b.dataset.tg),{active:b.dataset.on!=="1"});loadTasks()}catch(e){toast(err(e))}});
+    $$("[data-rm]").forEach(b=>b.onclick=async()=>{if(!confirm("Delete this task?"))return;try{await deleteDoc(doc(db,"tasks",b.dataset.rm));loadTasks()}catch(e){toast(err(e))}});
+  }catch(e){$("#k-list").innerHTML='<p class="bad">'+esc(err(e))+'</p>'}
+}
+
+/* ===== CONTEST (top inviters) ===== */
+$("#t-go").onclick=async()=>{
+  const days=Number($("#t-days").value);
+  if(!(days>=1&&days<=90)) return toast("Days must be 1 to 90");
+  $("#t-res").innerHTML='<p class="sub">Counting...</p>';
+  try{
+    const s=await getDocs(query(collection(db,"refs"),where("at",">=",Date.now()-days*86400000),limit(5000)));
+    const m={};s.docs.forEach(d=>{const r=String(d.data().referrer||"");if(r)m[r]=(m[r]||0)+1});
+    const top=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    if(!top.length){$("#t-res").innerHTML='<p class="sub">No invites in this period.</p>';return}
+    const rows=[];
+    for(const [tg,n] of top){let u=null;try{const l=await findUser(tg);u=l[0]||null}catch(e){}rows.push({tg,n,u})}
+    $("#t-res").innerHTML=rows.map((r,i)=>`<div class="item"><div style="flex:1"><b>${i<3?["🥇","🥈","🥉"][i]:i+1+"."} ${esc(r.u?(r.u.name||"?"):"Unknown")}</b> ${r.u&&r.u.username?"@"+esc(r.u.username):""}<small>ID ${esc(r.tg)} | <b>${r.n}</b> invites</small></div>${r.u?`<button class="s" data-pz="${i}">Give prize</button>`:""}</div>`).join("")+'<p class="sub">Check that the invited users are real before giving prizes.</p>';
+    const prizes=[1500,1000,500];
+    $$("[data-pz]").forEach(b=>b.onclick=async()=>{
+      const i=Number(b.dataset.pz), r=rows[i], amt=i<3?prizes[i]:Number(prompt("Coins to give?","100"));
+      if(!amt) return; if(!confirm("Give "+amt+" coins to "+(r.u.username?"@"+r.u.username:r.u.name)+"?")) return;
+      if(await give(r.u,amt,"Invite contest prize",false)){toast("Prize sent ✅");b.disabled=true;b.textContent="Sent"}
+    });
+  }catch(e){$("#t-res").innerHTML='<p class="bad">'+esc(err(e))+'</p>'}
+};
+
+loadCfg();loadStats();loadTasks();
+}
+
+
+const FIREBASE_CONFIG={apiKey:"AIzaSyAt5L0m5icdq_YcvDnLm9ubd3_m3TtPS44",authDomain:"extra-doge-coin.firebaseapp.com",projectId:"extra-doge-coin",appId:"1:431394704160:web:1e899c8e6d4dcf891aa545"};
+const ADMIN_EMAIL="extradogec@gmail.com";   // the password is NOT stored here. It lives only in Firebase.
+const V="10.14.1",B=`https://www.gstatic.com/firebasejs/${V}/`;
+const $=s=>document.querySelector(s);
+try{
+  const {initializeApp}=await import(B+"firebase-app.js");
+  const A=await import(B+"firebase-auth.js");
+  const FS=await import(B+"firebase-firestore.js");
+  const app=initializeApp(FIREBASE_CONFIG,"adminpage"),auth=A.getAuth(app),db=FS.getFirestore(app);
+  let mounted=false;
+  $("#so").onclick=async()=>{await A.signOut(auth);location.reload()};
+  async function login(){
+    const em=$("#em").value.trim().toLowerCase(),pw=$("#pw").value; if(!em||!pw) return;
+    $("#go").disabled=true;
+    if(em!==ADMIN_EMAIL){$("#msg").innerHTML='<span class="bad">Wrong email or password.</span>';$("#go").disabled=false;return}
+    try{await A.signInWithEmailAndPassword(auth,em,pw);$("#pw").value=""}
+    catch(e){const c=e.code||"";$("#msg").innerHTML='<span class="bad">'+((c.includes("invalid")||c.includes("wrong")||c.includes("user-not-found"))?"Wrong email or password.":c==="auth/too-many-requests"?"Too many tries. Wait a few minutes.":"Login failed: "+c)+'</span>'}
+    $("#go").disabled=false;
+  }
+  $("#go").onclick=login;$("#pw").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+  A.onAuthStateChanged(auth,u=>{
+    if(!u||(u.email||"").toLowerCase()!==ADMIN_EMAIL){if(u)A.signOut(auth);$("#gate").hidden=false;$("#app").hidden=true;$("#form").hidden=false;return}
+    $("#gate").hidden=true;$("#app").hidden=false;
+    if(!mounted){mounted=true;mountAdmin(db,FS,toast)}
+  });
+}catch(e){document.getElementById("msg").innerHTML='<span class="bad">Could not start: '+(e.code||e.message)+'</span><br><small>If it says referer blocked, add this page address to your Firebase API key website restrictions.</small>'}
+
+</script></body></html>
