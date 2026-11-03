@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>$EDOGE Mining</title>
+<meta name="theme-color" content="#16112e">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--ink:#16112e;--ink2:#221a45;--paper:#fff6e0;--yellow:#ffc62e;--pink:#ff5c9d;--sky:#58d6ff;--mint:#5ef2b0;--line:3px solid #000}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--ink);color:var(--paper);font:500 16px/1.45 system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column;max-width:520px;margin:0 auto}
+main{flex:1;overflow-y:auto;padding:18px 16px 24px}
+h1,h2,h3,.d{font-family:'Arial Black',Impact,system-ui,sans-serif;font-weight:900;letter-spacing:-.01em;line-height:1.05}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.hi{font-size:15px;opacity:.8}
+.card{background:var(--paper);color:#000;border:var(--line);border-radius:20px;padding:16px;box-shadow:5px 5px 0 #000;margin-bottom:16px}
+.card.y{background:var(--yellow)} .card.p{background:var(--pink)} .card.s{background:var(--sky)} .card.m{background:var(--mint)}
+.bal{text-align:center}
+.bal small{display:block;font-weight:700;opacity:.75}
+.bal .n{font:900 52px/1 'Arial Black',Impact,sans-serif;margin:4px 0}
+.dogwrap{display:grid;place-items:center;margin:6px 0 10px}
+.dog{width:190px;height:190px;border-radius:50%;background:var(--yellow);border:var(--line);box-shadow:6px 6px 0 #000;display:grid;place-items:center;font-size:96px;cursor:pointer;user-select:none;transition:transform .1s}
+.dog:active{transform:translate(4px,4px);box-shadow:2px 2px 0 #000}
+.dog.off{filter:grayscale(.7);opacity:.7}
+.btn{display:block;width:100%;font:800 17px system-ui,sans-serif;color:#000;background:var(--yellow);border:var(--line);border-radius:999px;padding:13px 18px;box-shadow:4px 4px 0 #000;cursor:pointer;text-align:center;text-decoration:none}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.btn.pink{background:var(--pink)} .btn.sky{background:var(--sky)} .btn.paper{background:var(--paper)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:var(--ink2);border:2px solid rgba(255,246,224,.2);border-radius:16px;padding:12px;text-align:center}
+.stat b{display:block;font:900 24px 'Arial Black',sans-serif}
+.stat span{font-size:13px;opacity:.75}
+h2{font-size:26px;margin-bottom:12px}
+.task{display:flex;align-items:center;gap:12px;background:var(--ink2);border:2px solid rgba(255,246,224,.2);border-radius:16px;padding:12px;margin-bottom:10px}
+.task .ic{font-size:28px}
+.task .t{flex:1} .task .t b{display:block} .task .t small{opacity:.7}
+.task .btn{width:auto;padding:8px 14px;font-size:14px}
+.note{font-size:13px;opacity:.7;margin-top:8px}
+input{width:100%;font:600 16px ui-monospace,Menlo,monospace;padding:13px 14px;border-radius:14px;border:var(--line);background:#fff;color:#000;margin:10px 0}
+nav{display:flex;background:var(--ink2);border-top:3px solid #000;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;min-width:0;background:none;border:0;color:var(--paper);padding:10px 2px 9px;font:700 11px system-ui,sans-serif;opacity:.6;cursor:pointer}
+nav button .e{display:block;font-size:22px;margin-bottom:2px}
+nav button.on{opacity:1;color:var(--yellow)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:#000;color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;font-size:15px;opacity:0;transition:.25s;pointer-events:none;max-width:90%;text-align:center;z-index:1000}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.tab{display:none} .tab.on{display:block}
+.ptr{position:absolute;left:50%;top:-16px;transform:translateX(-50%);font-size:34px;line-height:1;z-index:2;color:#000;text-shadow:0 2px 0 #fff6e0}
+canvas{display:block;touch-action:none;max-width:100%}
+#gc{width:100%;height:auto;border:var(--line);border-radius:18px;background:#221a45;margin:10px 0}
+.pop{animation:pop .5s}
+@keyframes pop{30%{transform:scale(1.18)}}
+.loading{height:100%;display:grid;place-items:center;font-size:44px}
+.qbub{background:#fff;color:#000;border:var(--line);border-radius:18px;padding:14px;font-weight:700;margin:10px 0;box-shadow:4px 4px 0 #000;word-break:break-word}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn.red{background:#ff6b6b}.btn.green{background:var(--mint)}
+.ccard{border:var(--line);border-radius:20px;padding:14px;margin-bottom:14px;box-shadow:5px 5px 0 #000;color:#000}
+.ccard .big{font-size:46px;line-height:1}
+.ccard .bonus{font:900 22px 'Arial Black',sans-serif}
+.pillx{display:inline-block;background:#000;color:#fff6e0;border-radius:999px;font:800 11px system-ui;padding:3px 10px;letter-spacing:.05em}
+.lbrow{color:var(--paper);display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;background:var(--ink2);margin-bottom:6px}
+.lbrow.me{outline:3px solid var(--yellow)}
+.lbrow b.r{width:28px;text-align:center}
+.lbrow span.n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seg{display:flex;gap:6px;margin:8px 0 10px}.seg button{flex:1;font:800 13px system-ui;padding:9px 4px;border-radius:12px;border:2px solid rgba(0,0,0,.35);background:none;color:#000}.seg button.on{background:var(--yellow);color:#000;border-color:#000}
+body{background:radial-gradient(900px 500px at 10% -10%,rgba(255,92,157,.28),transparent 60%),radial-gradient(800px 500px at 100% 10%,rgba(88,214,255,.22),transparent 60%),radial-gradient(700px 500px at 50% 110%,rgba(94,242,176,.16),transparent 60%),var(--ink);background-attachment:fixed}
+.bal .n{text-shadow:0 0 18px rgba(255,255,255,.55)}
+.dog{position:relative;animation:float 3.4s ease-in-out infinite}
+.dog .acc{position:absolute;top:-30px;right:8px;font-size:62px;filter:drop-shadow(3px 3px 0 #000)}
+#claim:not([disabled]){animation:pulse 1.6s infinite}
+@keyframes float{50%{transform:translateY(-8px)}}
+@keyframes pulse{0%,100%{box-shadow:4px 4px 0 #000,0 0 0 0 rgba(255,198,46,.6)}50%{box-shadow:4px 4px 0 #000,0 0 0 12px rgba(255,198,46,0)}}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.chip{background:var(--ink2);border:2px solid rgba(255,246,224,.25);border-radius:999px;padding:5px 12px;font:800 13px system-ui}
+.xpbar{height:12px;background:var(--ink2);border:2px solid #000;border-radius:999px;overflow:hidden;margin:6px 0 4px}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--yellow));border-radius:999px;transition:width .5s}
+.q{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px dashed rgba(0,0,0,.2)}
+.q:last-child{border:0}.q b{flex:1}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.bd{background:var(--ink2);border:2px solid rgba(255,246,224,.2);border-radius:14px;padding:8px 2px;text-align:center;font-size:11px;font-weight:700}
+.bd span{display:block;font-size:26px}.bd.off{opacity:.3;filter:grayscale(1)}
+.cf{position:fixed;top:-20px;font-size:24px;z-index:2000;pointer-events:none;animation:fall 1.4s ease-in forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.2}}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;place-items:center;z-index:1500}
+#modal.on{display:grid}
+#modal .box{background:var(--yellow);color:#000;border:var(--line);border-radius:24px;padding:26px 30px;text-align:center;box-shadow:6px 6px 0 #000;max-width:300px}
+.shake{animation:shake .5s infinite}
+@keyframes shake{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+.skin{display:flex;align-items:center;gap:12px;padding:12px;border:var(--line);border-radius:18px;margin-bottom:12px;box-shadow:4px 4px 0 #000;color:#000;background:var(--paper)}
+.skin .sd{width:62px;height:62px;border-radius:50%;border:var(--line);display:grid;place-items:center;font-size:32px;position:relative;flex:none}
+.skin .sd i{position:absolute;top:-14px;right:-6px;font-size:24px;font-style:normal}
+.skin .t{flex:1;font-weight:800}.skin .btn{width:auto;padding:8px 14px;font-size:14px}
+@media(prefers-reduced-motion:reduce){.pop,.dog,#claim{animation:none!important}}
+
+.card.l{background:#b388ff}
+.btn.lav{background:#b388ff}
+.stk{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sticker{background:var(--paper);color:#000;border:var(--line);border-radius:18px;box-shadow:4px 4px 0 #000;padding:10px 6px;text-align:center;transform:rotate(var(--r,0deg))}
+.sticker .em{font-size:44px;line-height:1.1}
+.sticker b{display:block;font-size:12px;margin:4px 0}
+.sticker .btn{padding:6px 8px;font-size:12px;box-shadow:2px 2px 0 #000}
+.sticker.on{outline:3px solid var(--pink)}
+.pbar{height:12px;background:rgba(0,0,0,.15);border-radius:999px;overflow:hidden;border:2px solid #000;margin:3px 0 8px}
+.pbar i{display:block;height:100%;transition:width .6s}
+.petface{width:120px;height:120px;margin:4px auto 10px;border-radius:50%;border:var(--line);display:grid;place-items:center;font-size:62px;box-shadow:5px 5px 0 #000;position:relative;animation:float 3s ease-in-out infinite}
+.petface .mood{position:absolute;right:-10px;bottom:-6px;font-size:30px;background:var(--paper);border:3px solid #000;border-radius:50%;width:48px;height:48px;display:grid;place-items:center}
+.fl{position:fixed;font-size:26px;pointer-events:none;z-index:1800;animation:up 1s ease-out forwards}
+@keyframes up{to{transform:translateY(-90px);opacity:0}}
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="main"><div class="loading">🐶</div></main>
+  <nav id="nav" hidden>
+    <button data-t="mine" class="on"><span class="e">⛏️</span>Mine</button>
+    <button data-t="tasks"><span class="e">✅</span>Tasks</button>
+    <button data-t="games"><span class="e">🎮</span>Games</button>
+    <button data-t="cards"><span class="e">🛍️</span>Shop</button>
+    <button data-t="lb"><span class="e">🏆</span>Ranks</button>
+    <button data-t="friends"><span class="e">👥</span>Friends</button>
+    <button data-t="me"><span class="e">👤</span>Profile</button>
+  </nav>
+</div>
+<div id="toast"></div>
+<div id="modal"><div class="box" id="modalbox"></div></div>
+
+<script type="module">
+/* ============ SETTINGS (edit here) ============ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAt5L0m5icdq_YcvDnLm9ubd3_m3TtPS44",
+  authDomain: "extra-doge-coin.firebaseapp.com",
+  databaseURL: "https://extra-doge-coin-default-rtdb.firebaseio.com",
+  projectId: "extra-doge-coin",
+  storageBucket: "extra-doge-coin.firebasestorage.app",
+  messagingSenderId: "431394704160",
+  appId: "1:431394704160:web:1e899c8e6d4dcf891aa545"
+};
+/* ---- paste your links here (a task shows up only when its link is filled in) ---- */
+const TELEGRAM_CHANNEL_LINK = "https://t.me/extradoge_coin";
+const X_ACCOUNT_LINK        = "https://x.com/extradogecoin";
+const YOUTUBE_LINK          = "https://youtube.com/@extradogecoin";
+const WEBSITE_LINK          = "https://www.extradogecoin.xyz";
+
+const BOT_USERNAME = "Extradogebot";
+/* Invite link base. Use ONE of these, whichever opens the Mini App directly:
+   "https://t.me/Extradogebot?startapp="        (Main Mini App)
+   "https://t.me/Extradogebot/app?startapp="    (Mini App with short name "app") */
+const INVITE_LINK_BASE = "https://t.me/Extradogebot?startapp=";
+const APP_SHORT_NAME = "app";                 // t.me/Extradogebot/app
+const BASE_REWARD = 5;                        // coins per daily claim
+const PER_INVITE_BONUS = 0.5;                 // extra coins per claim for every invited friend
+const MAX_INVITES_COUNTED = 50;
+const WELCOME_BONUS = 5;
+const COOLDOWN_MS = 24*60*60*1000;
+const TASK_REWARD = 5;                        // coins per task, one time each
+const TASKS = [
+  {id:"tg",  icon:"✈️", title:"Join our Telegram channel", reward:TASK_REWARD, url:TELEGRAM_CHANNEL_LINK},
+  {id:"x",   icon:"𝕏",  title:"Follow us on X",            reward:TASK_REWARD, url:X_ACCOUNT_LINK},
+  {id:"yt",  icon:"▶️", title:"Subscribe on YouTube",      reward:TASK_REWARD, url:YOUTUBE_LINK},
+  {id:"web", icon:"🌐", title:"Visit our website",         reward:TASK_REWARD, url:WEBSITE_LINK}
+];
+/* =============================================== */
+
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || null;
+const qs = new URLSearchParams(location.search);
+const myTgId = String(tgUser ? tgUser.id : (qs.get("uid") || "demo"));
+const myName = tgUser ? (tgUser.first_name || "Friend") : "Friend";
+const myUname = String((tgUser&&tgUser.username)||"").toLowerCase().replace(/[^a-z0-9_]/g,"").slice(0,40);
+const startSrc=[];
+function readStart(){
+  let v="";
+  try{v=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param)||"";if(v)startSrc.push("unsafe")}catch(e){}
+  if(!v){try{v=new URLSearchParams((tg&&tg.initData)||"").get("start_param")||"";if(v)startSrc.push("initData")}catch(e){}}
+  if(!v){try{v=new URLSearchParams(location.hash.slice(1)).get("tgWebAppStartParam")||"";if(v)startSrc.push("hash")}catch(e){}}
+  if(!v){try{v=qs.get("tgWebAppStartParam")||qs.get("startapp")||qs.get("ref")||"";if(v)startSrc.push("query")}catch(e){}}
+  return v;
+}
+const startParam = String(readStart()).replace(/[^A-Za-z0-9_-]/g,"").slice(0,40);
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const round1 = n => Math.round(n*10)/10;
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2200)}
+let SND=true; try{SND=localStorage.getItem("edoge_snd")!=="0"}catch(e){}
+let AC=null;
+function sfx(k){ if(!SND) return; try{
+  AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume();
+  const f={ok:[660,990],tap:[520,780],bad:[220,120],win:[523,1047]}[k]||[600,800], o=AC.createOscillator(), g=AC.createGain();
+  o.type="triangle"; o.frequency.setValueAtTime(f[0],AC.currentTime); o.frequency.exponentialRampToValueAtTime(f[1],AC.currentTime+.12);
+  g.gain.setValueAtTime(.12,AC.currentTime); g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.2); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime+.22);
+}catch(e){} }
+function buzz(){try{tg&&tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred("success")}catch(e){} sfx("ok")}
+function confetti(n=26){const em=["🪙","✨","🎉","🐕","⭐"];for(let i=0;i<n;i++){const e=document.createElement("span");e.className="cf";e.textContent=em[i%em.length];e.style.left=Math.random()*100+"vw";e.style.animationDelay=Math.random()*.5+"s";document.body.appendChild(e);setTimeout(()=>e.remove(),2200)}}
+
+/* ---------- storage: Firebase if configured, otherwise this device only ---------- */
+let store, mode;
+async function makeStore(){
+  if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId) {
+    try {
+      const V="10.14.1", B=`https://www.gstatic.com/firebasejs/${V}/`;
+      const {initializeApp}=await import(B+"firebase-app.js");
+      const {getAuth,signInAnonymously}=await import(B+"firebase-auth.js");
+      const FS=await import(B+"firebase-firestore.js");
+      const {getFirestore,doc,getDoc,setDoc,updateDoc,collection,query,where,getDocs}=FS;
+      // One Firebase app (and therefore one saved login) per Telegram account, so several accounts on one phone never overwrite each other.
+      const app=initializeApp(FIREBASE_CONFIG,"tg"+myTgId), auth=getAuth(app), db=getFirestore(app);
+      await auth.authStateReady();
+      if(!auth.currentUser) await signInAnonymously(auth);
+      const uid=auth.currentUser.uid;
+      const uref=doc(db,"users",uid);
+      mode="cloud";
+      return {
+        kit(){return {db,F:FS}},
+        async lbPut(name,coins){await setDoc(doc(db,"lb",uid),{name,coins,at:Date.now()})},
+        async lbwPut(wk,name,v){await setDoc(doc(db,"lbw",String(wk),"u",uid),{name,catcher:v.catcher,pet:v.pet})},
+        async lbwGet(wk){const s=await getDoc(doc(db,"lbw",String(wk),"u",uid));return s.exists()?s.data():null},
+        async lbTop(kind,wk){
+          const q=kind==="coins"?query(collection(db,"lb"),FS.orderBy("coins","desc"),FS.limit(10)):query(collection(db,"lbw",String(wk),"u"),FS.orderBy(kind,"desc"),FS.limit(10));
+          const s=await getDocs(q);return s.docs.map(d=>Object.assign({id:d.id},d.data()))},
+        uid,
+        async load(){const s=await getDoc(uref);return s.exists()?s.data():null},
+        async create(d){await setDoc(uref,d)},
+        async patch(p){await updateDoc(uref,p)},
+        async addRef(referrer){await setDoc(doc(db,"refs",uid),{referrer:String(referrer),child:uid,at:Date.now()})},
+        async refCount(){const s=await getDocs(query(collection(db,"refs"),where("referrer","==",myTgId)));return s.size},
+        async getConfig(){const s=await getDoc(doc(db,"config","app"));return s.exists()?s.data():null},
+        async getTasks(u){const s=await getDocs(query(collection(db,"tasks"),where("active","==",true),where("forUsername","in",["",u||"-"])));return s.docs.map(d=>Object.assign({id:d.id},d.data()))}
+      };
+    } catch(e){ console.error("Firebase failed, using local mode", e); }
+  }
+  mode="local";
+  const K="edoge_mining_v1_"+myTgId;
+  const get=()=>{try{return JSON.parse(localStorage.getItem(K))}catch(e){return null}};
+  const put=d=>{try{localStorage.setItem(K,JSON.stringify(d))}catch(e){}};
+  let mem=get();
+  return {
+    kit(){return null},
+    async lbPut(){}, async lbwPut(){}, async lbwGet(){return null}, async lbTop(){return []}, uid:"local",
+    async load(){return mem},
+    async create(d){mem=d;put(mem)},
+    async patch(p){mem=Object.assign({},mem,p);put(mem)},
+    async addRef(){},
+    async refCount(){return 0},
+    async getConfig(){return null},
+    async getTasks(){return []}
+  };
+}
+
+/* ---------- state ---------- */
+let S=null, refs=0, tick=null;
+const dbg={ref:"-",cnt:"-"};
+const CFG={appOn:true,gamesOn:true,cardsOn:true,miningOn:true,spinOn:true,catcherOn:true,petOn:true,spinMax:5,catcherMax:8,petMax:0.3,baseReward:BASE_REWARD,perInviteBonus:PER_INVITE_BONUS,cooldownMs:COOLDOWN_MS,message:""};
+let CUSTOM=[];
+const rewardNow = () => round1(CFG.baseReward + Math.min(refs,MAX_INVITES_COUNTED)*CFG.perInviteBonus + cardBonus(S));
+const nextAt = () => (S.lastClaim||0)+CFG.cooldownMs;
+const canClaim = () => CFG.miningOn && Date.now() >= nextAt();
+const SPIN_PER_DAY=3, GAME_PER_DAY=3, GAME_MAX=8, GAME_SECS=60;        // per-day limits (also enforced by the Firestore rules)
+const PRIZES=[{v:0.5,w:34},{v:1,w:28},{v:1.5,w:18},{v:2,w:12},{v:3,w:6},{v:5,w:2}];   // spin wheel: value and chance (%)
+const dayNum=()=>Math.floor(Date.now()/86400000);
+const wkNum=()=>Math.floor(Date.now()/604800000);
+const PET_COOLDOWN=3*3600*1000, PET_TAPS=8, PET_TIME=12, PET_PER_DAY=9;
+const PET_ACTS=[
+ {id:"feed",f:"petFedAt",icon:"🍖",label:"Feed",hint:"Tap the bowl",decay:12,col:"#ff9ec4"},
+ {id:"play",f:"petPlayAt",icon:"🎾",label:"Play",hint:"Throw the ball",decay:12,col:"#9bd8ff"},
+ {id:"nap", f:"petSleepAt",icon:"🛏️",label:"Nap",hint:"Tuck in the pup",decay:16,col:"#cbb8ff"}
+];
+const petStat=a=>{const t=S[a.f]||0; if(!t) return 50; return Math.max(0,Math.min(100,Math.round(100-((Date.now()-t)/3600000)/a.decay*100)))};
+const petMood=()=>{const m=PET_ACTS.reduce((x,a)=>x+petStat(a),0)/PET_ACTS.length;return m>70?"😄":m>40?"🙂":m>15?"😟":"😢"};
+const petReady=a=>Date.now()-(S[a.f]||0)>=PET_COOLDOWN;
+const petActsLeft=()=>Math.max(0,PET_PER_DAY-(S.petDay===dayNum()?(S.petActs||0):0));
+const petReward=()=>round1(Math.min(0.3,CFG.petMax));
+/* Adsterra display banners: passive ads, NO coins for viewing or clicking (Adsterra forbids incentives). Set ADSTERRA_ON=false to hide them. */
+const ADSTERRA_ON=true;
+const ADB={b320x50a:"bb0ba39afd053132ffedaca0101211ab",b300x250:"d152f4e3b06fd34f9c0ad735d0aa837e",b320x50b:"bb0ba39afd053132ffedaca0101211ab"};
+function adBox(w,h,key){
+  if(!ADSTERRA_ON) return "";
+  const doc='<!doctype html><html><body style="margin:0;display:flex;justify-content:center;background:transparent"><script>atOptions={\'key\':\''+key+'\',\'format\':\'iframe\',\'height\':'+h+',\'width\':'+w+',\'params\':{}};<\/script><script src="https://bauval.org/22/'+key+'"><\/script></body></html>';
+  return `<div style="text-align:center;margin:10px 0 4px"><small class="note" style="display:block;margin:0 0 4px">Advertisement</small><iframe title="Advertisement" loading="lazy" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" srcdoc="${esc(doc)}" width="${w}" height="${h}" style="border:0;max-width:100%;border-radius:12px;background:#fff"></iframe></div>`;
+}
+let claiming=false;
+/* Dog skins (cosmetic, bought with app coins). Prices are also enforced by the Firestore rules. */
+const SKINS=[
+ {id:"classic",name:"Classic Doge",price:0,bg:"#ffc62e",acc:""},
+ {id:"neon",name:"Neon Pink",price:100,bg:"#ff5c9d",acc:""},
+ {id:"mint",name:"Mint DJ",price:150,bg:"#5ef2b0",acc:"🎧"},
+ {id:"sky",name:"Cool Sky",price:250,bg:"#58d6ff",acc:"🕶️"},
+ {id:"royal",name:"Royal Pup",price:500,bg:"#b388ff",acc:"👑"},
+ {id:"astro",name:"Astro Doge",price:800,bg:"#2a2358",acc:"🚀"},
+ {id:"fire",name:"Fire Pup",price:200,bg:"#ff7a45",acc:"🔥"},
+ {id:"ocean",name:"Ocean Wave",price:300,bg:"#3aa0ff",acc:"🌊"},
+ {id:"ghost",name:"Ghost Doge",price:350,bg:"#e6e6ff",acc:"👻"},
+ {id:"ninja",name:"Ninja Pup",price:500,bg:"#3b3b52",acc:"🥷"},
+ {id:"pirate",name:"Pirate Doge",price:650,bg:"#8b5a2b",acc:"🏴‍☠️"},
+ {id:"star",name:"Star Doge",price:900,bg:"#ffe066",acc:"✨"},
+ {id:"wizard",name:"Wizard Pup",price:1200,bg:"#7b5cff",acc:"🧙"}
+];
+const curSkin=()=>SKINS.find(k=>k.id===(S&&S.skin))||SKINS[0];
+const ownsSkin=id=>id==="classic"||!!(S.skins&&S.skins[id]);
+/* Levels and XP: XP is cosmetic (no coins) */
+const lvlOf=xp=>Math.floor(Math.sqrt(Math.max(0,xp)/25))+1;
+const xpFor=l=>25*(l-1)*(l-1);
+const lvlTitle=l=>l<3?"Pup 🐶":l<6?"Shiba 🐕":l<10?"Alpha 🦮":"Legend 👑";
+const streakNow=()=>{const d=dayNum();return (S.streakDay===d||S.streakDay===d-1)?(S.streak||0):0};
+let xpSrv=0, xpTimer=null, streakWant=false;
+function xpAdd(n){
+  const before=lvlOf(S.xp||0); S.xp=(S.xp||0)+n;
+  if(lvlOf(S.xp)>before){toast("⬆️ Level up! "+lvlTitle(lvlOf(S.xp))+" Lv "+lvlOf(S.xp));confetti();sfx("win")}
+  clearTimeout(xpTimer); xpTimer=setTimeout(xpFlush,1500);
+}
+function questState(){const d=dayNum();return [
+  {t:"Claim your daily coins",ok:Math.floor((S.lastClaim||0)/86400000)===d},
+  {t:"Play a game",ok:(S.gameDay===d&&S.gamePlays>0)||(S.spinDay===d&&S.spinsUsed>0)},
+  {t:"Take care of your Doge pet",ok:S.petDay===d&&S.petActs>0}]}
+async function xpFlush(){
+  if(!S||!store) return;
+  try{
+    const d=dayNum(), patch={};
+    if(streakWant&&S.streakDay!==d){patch.streakDay=d;patch.streak=(S.streakDay===d-1?(S.streak||0)+1:1)}
+    if(S.questDay!==d&&questState().every(q=>q.ok)){patch.questDay=d;S.xp=(S.xp||0)+20;toast("✅ Daily quests done! +20 XP")}
+    const target=S.xp||0; if(target>xpSrv||Object.keys(patch).length){
+      const step=Math.min(150,target-xpSrv); patch.xp=xpSrv+Math.max(0,step);
+      await store.patch(patch); xpSrv=patch.xp; Object.assign(S,patch,{xp:target});
+      if(target>xpSrv){xpTimer=setTimeout(xpFlush,300)}
+    }
+  }catch(e){console.warn("xp",e&&e.code||e)}
+}
+/* Cards: bought with app coins (not tokens). Prices and boosts are also enforced by the Firestore rules. */
+const CARDS=[
+ {id:"pup",    icon:"🐾", name:"Pup Pal",       price:30,   boost:.3, bg:"#ff9ec4", nft:false},
+ {id:"bronze", icon:"🐶", name:"Bronze Pup",    price:50,   boost:.5, bg:"#ff9f43", nft:false},
+ {id:"bone",   icon:"🦴", name:"Bone Buddy",    price:100,  boost:1,  bg:"#fff6e0", nft:false},
+ {id:"silver", icon:"🐕", name:"Silver Shiba",  price:200,  boost:2,  bg:"#d9e2ec", nft:false},
+ {id:"gold",   icon:"🦮", name:"Golden Doge",   price:600,  boost:7,  bg:"#ffc62e", nft:true},
+ {id:"rocket", icon:"🚀", name:"Rocket Pup",    price:1000, boost:11, bg:"#5ef2b0", nft:true},
+ {id:"diamond",icon:"💎", name:"Diamond Alpha", price:2000, boost:25, bg:"#58d6ff", nft:true},
+ {id:"galaxy", icon:"🌌", name:"Galaxy Alpha",  price:5000, boost:60, bg:"#b388ff", nft:true},
+ {id:"taco",icon:"🌮",name:"Taco Pup",price:150,boost:1.5,bg:"#ffd9a0",nft:false},
+ {id:"cool",icon:"😎",name:"Cool Pup",price:300,boost:3.5,bg:"#9be7ff",nft:false},
+ {id:"thunder",icon:"⚡",name:"Thunder Doge",price:400,boost:5,bg:"#fff27a",nft:false},
+ {id:"lava",icon:"🌋",name:"Lava Pup",price:800,boost:10,bg:"#ff8a65",nft:true},
+ {id:"ice",icon:"🧊",name:"Ice Alpha",price:1500,boost:18,bg:"#b8f0ff",nft:true},
+ {id:"sun",icon:"☀️",name:"Sun Alpha",price:3000,boost:38,bg:"#ffcf5c",nft:true},
+ {id:"king",icon:"🏆",name:"Doge King",price:10000,boost:130,bg:"#e0b3ff",nft:true}
+];
+/* Stickers: cosmetic collectibles bought with app coins. Prices are also enforced by the Firestore rules. */
+const STICKERS=[
+ {id:"st1",icon:"🌈",name:"Rainbow",price:20},{id:"st2",icon:"🍕",name:"Pizza Pup",price:20},{id:"st3",icon:"🦴",name:"Big Bone",price:30},
+ {id:"st4",icon:"⭐",name:"Star",price:40},{id:"st5",icon:"💖",name:"Heart Eyes",price:50},{id:"st6",icon:"🔥",name:"Hot Dog",price:60},
+ {id:"st7",icon:"🎀",name:"Pink Bow",price:80},{id:"st8",icon:"🍩",name:"Donut",price:100},{id:"st9",icon:"🌙",name:"Moon Walk",price:150},
+ {id:"st10",icon:"🚀",name:"To The Moon",price:200},{id:"st11",icon:"👑",name:"Crown",price:300},{id:"st12",icon:"💎",name:"Gem",price:500},
+ {id:"st13",icon:"🐱",name:"Cat Friend",price:25},
+ {id:"st14",icon:"🍔",name:"Burger",price:30},
+ {id:"st15",icon:"🎈",name:"Balloon",price:35},
+ {id:"st16",icon:"🌸",name:"Blossom",price:45},
+ {id:"st17",icon:"🍦",name:"Ice Cream",price:55},
+ {id:"st18",icon:"⚽",name:"Football",price:70},
+ {id:"st19",icon:"🎸",name:"Rock On",price:90},
+ {id:"st20",icon:"🦄",name:"Unicorn",price:120},
+ {id:"st21",icon:"🌍",name:"World Tour",price:180},
+ {id:"st22",icon:"🛸",name:"UFO",price:250},
+ {id:"st23",icon:"🏆",name:"Trophy",price:400},
+ {id:"st24",icon:"🔱",name:"Trident",price:700}
+];
+const curSticker=()=>STICKERS.find(k=>k.id===(S&&S.stick))||null;
+const ownsSticker=id=>!!(S.stk&&S.stk[id]);
+const cardBonus=s=>round1(CARDS.reduce((a,c)=>a+((s&&s.cards&&s.cards[c.id])?c.boost:0),0));
+const spinsLeft=()=>Math.max(0,SPIN_PER_DAY-(S.spinDay===dayNum()?(S.spinsUsed||0):0));
+const playsLeft=()=>Math.max(0,GAME_PER_DAY-(S.gameDay===dayNum()?(S.gamePlays||0):0));
+let petBusy=false, PA=null, shopTab="cards", W={wk:0,catcher:0,pet:0}, lbTab="coins", lbTimer=null;
+let gameRun=false, spinning=false, pendingRender=false, wheelAngle=0, G=null, gx=170;
+const allTasks = () => TASKS.filter(t=>t.url).concat(CUSTOM);
+async function loadCfg(){
+  try{const c=await store.getConfig(); if(!c) return;
+    const n=(v,d,lo,hi)=>{v=Number(v);return isFinite(v)&&v>=lo&&v<=hi?v:d};
+    CFG.miningOn=c.miningOn!==false; CFG.appOn=c.appOn!==false; CFG.gamesOn=c.gamesOn!==false; CFG.cardsOn=c.cardsOn!==false;
+    CFG.spinOn=c.spinOn!==false; CFG.catcherOn=c.catcherOn!==false; CFG.petOn=c.petOn!==false;
+    CFG.spinMax=n(c.spinMax,5,0,50); CFG.catcherMax=n(c.catcherMax,8,0,100); CFG.petMax=n(c.petMax,0.3,0,5);
+    CFG.baseReward=n(c.baseReward,BASE_REWARD,0,1000);
+    CFG.perInviteBonus=n(c.perInviteBonus,PER_INVITE_BONUS,0,100);
+    CFG.cooldownMs=n(c.cooldownMs,COOLDOWN_MS,3600000,30*86400000);
+    CFG.message=String(c.message||"").slice(0,200);
+  }catch(e){console.warn("config",e)}
+}
+async function refreshS(){try{const cur=await store.load(); if(cur) S=Object.assign(S,cur)}catch(e){}}
+const inviteLink = () => INVITE_LINK_BASE + myTgId;
+function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000));const h=String(Math.floor(s/3600)).padStart(2,"0"),m=String(Math.floor(s%3600/60)).padStart(2,"0"),x=String(s%60).padStart(2,"0");return `${h}:${m}:${x}`}
+
+/* ---------- views ---------- */
+function render(){
+  if(gameRun||spinning||petBusy){pendingRender=true;return}
+  if(!CFG.appOn){$("#nav").style.display="none";$("#main").innerHTML='<div class="card y" style="margin-top:60px;text-align:center"><div style="font-size:64px">🛠️</div><h2>Back soon</h2><p>The app is paused for a short update. Your coins are safe. Please check back later.</p></div>';return}
+  $("#nav").style.display="";
+  const tasks=allTasks();
+  const L=lvlOf(S.xp||0), lp=Math.min(100,Math.round(((S.xp||0)-xpFor(L))/(xpFor(L+1)-xpFor(L))*100)), sk=curSkin();
+  $("#main").innerHTML=`
+  <section class="tab on" id="t-mine">
+    <div class="top"><div><div class="hi">Hi, ${esc(myName)} ${curSticker()?curSticker().icon:"👋"}</div><h1 style="font-size:26px">$EDOGE Mining</h1></div></div>
+    ${CFG.message?`<div class="card s" style="padding:12px"><b>📢 ${esc(CFG.message)}</b></div>`:""}
+    <div class="chips"><span class="chip">${lvlTitle(L)} · Lv ${L}</span><span class="chip">🔥 ${streakNow()} day streak</span><span class="chip">XP ${S.xp||0}</span></div>
+    <div class="xpbar"><i style="width:${lp}%"></i></div>
+    <div class="card y bal"><small>Your coins</small><div class="n" id="bal">${S.coins}</div><small>Points collected in the app. Not tokens yet.</small></div>
+    <div class="dogwrap"><div class="dog" id="dog" role="button" aria-label="Claim" style="background:${sk.bg}">🐶${sk.acc?`<span class="acc">${sk.acc}</span>`:""}</div></div>
+    <button class="btn" id="claim"></button>
+    <p class="note" style="text-align:center" id="rate"></p>
+    <div class="grid2" style="margin-top:16px">
+      <div class="stat"><b id="s-ref">${refs}</b><span>Friends invited</span></div>
+      <div class="stat"><b id="s-rate">+${rewardNow()}</b><span>Coins per claim</span></div>
+    </div>
+  </section>
+
+  <section class="tab" id="t-tasks">
+    <h2>Tasks</h2>
+    <div class="card m"><b style="font-size:19px">🎯 Daily quests</b><p class="note" style="color:#000;opacity:.75;margin:2px 0 6px">Finish all 3 for +20 XP</p>
+      ${questState().map(q=>`<div class="q"><span style="font-size:22px">${q.ok?"✅":"⬜"}</span><b>${q.t}</b></div>`).join("")}</div>
+    ${adBox(300,250,ADB.b300x250)}
+    ${tasks.map(t=>{const done=S.tasks&&S.tasks[t.id];return `
+      <div class="task"><div class="ic">${t.icon}</div><div class="t"><b>${esc(t.title)}</b><small>+${t.reward} coins</small></div>
+      ${done?`<span>✅</span>`:`<button class="btn sky" data-task="${t.id}">Go</button>`}</div>`}).join("")||'<p class="note">New tasks are coming soon.</p>'}
+    <p class="note">Open the link, wait a few seconds, then tap Claim.</p>
+  </section>
+
+  <section class="tab" id="t-games">
+    <h2>Games</h2>
+    <div class="card y">
+      <div class="row"><b style="font-size:20px">🎡 Lucky Spin</b><span><b id="spinsLeft">${spinsLeft()}</b>/${SPIN_PER_DAY} spins left</span></div>
+      <div style="position:relative;width:260px;margin:22px auto 12px"><div class="ptr">▼</div><canvas id="wheel" width="520" height="520" style="width:260px;height:260px"></canvas></div>
+      <button class="btn" id="spin">Spin the wheel</button>
+      <p class="note" style="color:#000;opacity:.75">Win coins on every spin (up to ${CFG.spinMax}). ${SPIN_PER_DAY} spins every day, resets at 00:00 UTC.</p>
+    </div>
+    <div class="card s">
+      <div class="row"><b style="font-size:20px">🐕 EDOGE Catcher</b><span><b id="playsLeft">${playsLeft()}</b>/${GAME_PER_DAY} plays left</span></div>
+      <canvas id="gc" width="340" height="460"></canvas>
+      <button class="btn pink" id="gstart">Play</button>
+      <p class="note" style="color:#000;opacity:.8">Drag to move the dog and catch the coins. A 💣 ends your round, but you keep the coins you caught. One round is 60 seconds at most and it gets faster. Up to ${CFG.catcherMax} coins per round. ${GAME_PER_DAY} plays every day.</p>
+    </div>
+    <div class="card p" id="petcard">
+      <div class="row"><b style="font-size:20px">🐶 My Pet</b><span><b id="petLeft">${petActsLeft()}</b>/${PET_PER_DAY} cares today</span></div>
+      ${CFG.gamesOn&&CFG.petOn?`<div id="petarea">${petHtml()}</div>`:'<p class="note" style="color:var(--ink)">This game is paused for now.</p>'}
+    </div>
+    <p class="note">Every game lasts at most 1 minute. Care for your pet 3 times a day for steady coins. Game and spin coins are app points. More games are planned.</p>
+  </section>
+
+  <section class="tab" id="t-lb">
+    <h2>Ranks</h2>
+    <div class="card" id="lbcard">
+      <b style="font-size:20px">🏆 Leaderboard</b>
+      <div class="seg" id="lbseg"><button data-k="coins" class="${lbTab==="coins"?"on":""}">Top coins</button><button data-k="catcher" class="${lbTab==="catcher"?"on":""}">Catcher (week)</button><button data-k="pet" class="${lbTab==="pet"?"on":""}">Pet care (week)</button></div>
+      <div id="lblist"><p class="note">Loading...</p></div>
+      <p class="note" style="color:#000">Shows Telegram first names. Weekly boards reset every Monday 00:00 UTC.</p>
+    </div>
+    ${adBox(320,50,ADB.b320x50b)}
+  </section>
+
+  <section class="tab" id="t-cards">
+    <h2>Shop 🛍️</h2>
+    <div class="seg" id="shopseg"><button data-s="cards" class="${shopTab==="cards"?"on":""}">Cards</button><button data-s="skins" class="${shopTab==="skins"?"on":""}">Dog skins</button><button data-s="stickers" class="${shopTab==="stickers"?"on":""}">Stickers</button></div>
+    <div id="shopbody">${shopBody()}</div>
+    ${adBox(320,50,ADB.b320x50a)}
+  </section>
+
+  <section class="tab" id="t-friends">
+    <h2>Invite friends</h2>
+    <div class="card s"><p><b>Every friend who joins with your link adds +${CFG.perInviteBonus} coins to every daily claim you make.</b></p>
+    <p class="note" style="color:#000;opacity:.7">Up to ${MAX_INVITES_COUNTED} friends count. Fake or duplicate accounts are removed before any airdrop.</p></div>
+    <div class="grid2" style="margin-bottom:16px"><div class="stat"><b>${refs}</b><span>Friends</span></div><div class="stat"><b>+${rewardNow()}</b><span>Per claim</span></div></div>
+    <button class="btn paper" id="refresh" style="margin-bottom:12px">Refresh friends count</button>
+    <div class="card m"><b>Your invite code: ${esc(myTgId)}</b><p class="note" style="color:#000;opacity:.75">Friends can type this code in their Friends tab if the link does not work.</p></div>
+    ${S.referredBy?`<p class="note">You joined with invite code ${esc(S.referredBy)}.</p>`:`<div class="card y"><b>Have a friend's invite code?</b>
+      <input id="code" inputmode="numeric" placeholder="Enter invite code" autocomplete="off">
+      <button class="btn" id="apply">Apply code</button></div>`}
+    <input id="link" readonly value="${esc(inviteLink())}">
+    <button class="btn" id="copy">Copy my invite link</button>
+    <button class="btn pink" id="share" style="margin-top:12px">Share on Telegram</button>
+  </section>
+
+  <section class="tab" id="t-me">
+    <h2>Profile</h2>
+    <div class="card"><div class="row"><b>${esc(myName)}</b><span>ID ${esc(myTgId)}</span></div>
+      <div class="row" style="margin-top:8px"><span>Coins</span><b id="p-bal">${S.coins}</b></div>
+      <div class="row"><span>Friends invited</span><b>${refs}</b></div></div>
+    <div class="card y"><b>${lvlTitle(L)} · Level ${L}</b><div class="xpbar"><i style="width:${lp}%"></i></div><small>${S.xp||0} XP · next level at ${xpFor(L+1)} XP · 🔥 ${streakNow()} day streak</small></div>
+    <div class="card l"><b>My stickers</b><div style="font-size:34px;margin-top:6px;letter-spacing:4px">${STICKERS.filter(k=>ownsSticker(k.id)).map(k=>k.icon).join(" ")||'<span class="note">None yet. Find them in the Shop!</span>'}</div></div>
+    <h3 style="font-size:18px;margin:6px 0 8px">Badges</h3>
+    <div class="badges" style="margin-bottom:16px">${badgeList().map(b=>`<div class="bd${b.ok?"":" off"}"><span>${b.i}</span>${b.t}</div>`).join("")}</div>
+    <button class="btn paper" id="snd" style="margin-bottom:14px">${SND?"🔊 Sound: On":"🔇 Sound: Off"}</button>
+    <div class="card s"><b>Base wallet address</b>
+      <p class="note" style="color:#000;opacity:.75">For the future airdrop. Use a Base / Ethereum-style address that starts with 0x. Never share your seed phrase or private key with anyone.</p>
+      <input id="wallet" placeholder="0x..." value="${esc(S.wallet||"")}" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn" id="savew">Save wallet</button></div>
+    <p class="note">The $EDOGE token is not launched yet and there is no contract address. Coins here are app points. Nothing here is financial advice, and we never ask for money, a seed phrase or a private key.</p>
+  </section>`;
+  bind(); paintClaim();
+}
+function shopBody(){
+  if(shopTab==="cards") return `<div class="card y"><p><b>Buy cards with your app coins to boost every daily claim.</b></p>
+      <p class="note" style="color:var(--ink)">Each card can be bought once. Your boost now: <b>+${cardBonus(S)}</b> coins per claim.</p></div>
+    ${CARDS.map(c=>{const own=S.cards&&S.cards[c.id];return `<div class="ccard" style="background:${c.bg}">
+      <div class="row"><div class="big">${c.icon}</div><div style="flex:1;padding-left:8px"><b style="font-size:19px">${c.name}</b><div class="bonus">+${c.boost} per claim</div></div>${c.nft?'<span class="pillx">NFT planned</span>':''}</div>
+      ${own?'<button class="btn paper" disabled style="margin-top:10px">✅ Owned</button>':`<button class="btn" data-buy="${c.id}" style="margin-top:10px">Buy for ${c.price} coins</button>`}</div>`}).join("")}
+    <p class="note">Cards are in-app items bought with app points, not tokens. NFT versions of some cards are only planned: there is no date, no guarantee they will happen, and no promise of any value. Not financial advice.</p>`;
+  if(shopTab==="skins") return `<p class="note" style="margin:0 0 10px">Skins are cosmetic and cost app coins. Your dog and your pet wear them!</p>
+    ${SKINS.map(k=>{const own=ownsSkin(k.id),on=curSkin().id===k.id;return `<div class="skin"><div class="sd" style="background:${k.bg}">🐶${k.acc?`<i>${k.acc}</i>`:""}</div><div class="t">${k.name}<div style="font-weight:700;font-size:13px;opacity:.7">${own?"Owned":k.price+" coins"}</div></div>${on?'<span>✅ Equipped</span>':own?`<button class="btn paper" data-skinon="${k.id}">Equip</button>`:`<button class="btn" data-skinbuy="${k.id}">Buy</button>`}</div>`}).join("")}`;
+  return `<p class="note" style="margin:0 0 10px">Collect cute stickers with app coins and show one next to your name. Cosmetic only.</p>
+    <div class="stk">${STICKERS.map((k,i)=>{const own=ownsSticker(k.id),on=S.stick===k.id;return `<div class="sticker${on?" on":""}" style="--r:${(i%3-1)*3}deg"><div class="em">${k.icon}</div><b>${k.name}</b>${on?'<span>✅ On</span>':own?`<button class="btn paper" data-stkon="${k.id}">Wear</button>`:`<button class="btn" data-stkbuy="${k.id}">${k.price} coins</button>`}</div>`}).join("")}</div>
+    ${S.stick?'<button class="btn paper" id="stkoff" style="margin-top:12px">Remove sticker</button>':""}`;
+}
+function badgeList(){const cn=S.cards?Object.keys(S.cards).length:0,sn=(S.skins?Object.keys(S.skins).length:0)+(S.stk?Object.keys(S.stk).length:0),L=lvlOf(S.xp||0);return [
+ {i:"🌱",t:"First claim",ok:(S.lastClaim||0)>0},{i:"🔥",t:"7-day streak",ok:streakNow()>=7},{i:"🃏",t:"Card owner",ok:cn>0},{i:"🎨",t:"Styled dog",ok:sn>0},
+ {i:"👥",t:"5 friends",ok:refs>=5},{i:"⭐",t:"Level 5",ok:L>=5},{i:"🪙",t:"100 coins",ok:(S.coins||0)>=100},{i:"🐶",t:"Pet lover",ok:(S.petFedAt||0)>0}]}
+function bindShop(){
+  document.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>buyCard(b.dataset.buy));
+  document.querySelectorAll("[data-skinbuy]").forEach(b=>b.onclick=()=>buySkin(b.dataset.skinbuy));
+  document.querySelectorAll("[data-skinon]").forEach(b=>b.onclick=()=>equipSkin(b.dataset.skinon));
+  document.querySelectorAll("[data-stkbuy]").forEach(b=>b.onclick=()=>buySticker(b.dataset.stkbuy));
+  document.querySelectorAll("[data-stkon]").forEach(b=>b.onclick=()=>wearSticker(b.dataset.stkon));
+  const so=$("#stkoff"); if(so) so.onclick=()=>wearSticker("");
+}
+function paintClaim(){
+  const b=$("#claim"),d=$("#dog"),r=$("#rate");if(!b)return;
+  if(!CFG.miningOn){b.disabled=true;b.textContent="Mining is paused";d.classList.add("off");r.textContent="Mining is paused for now. Please check back soon.";return;}
+  if(canClaim()){b.disabled=false;b.textContent=`Claim +${rewardNow()} coins`;d.classList.remove("off");r.textContent="Your daily coins are ready.";}
+  else{b.disabled=true;b.textContent="Next claim in "+fmt(nextAt()-Date.now());d.classList.add("off");r.textContent="Come back every "+round1(CFG.cooldownMs/3600000)+" hours.";}
+}
+function setCoins(){lbSoon();if(S&&store){clearTimeout(xpTimer);xpTimer=setTimeout(xpFlush,2500)}["#bal","#p-bal"].forEach(s=>{const e=$(s);if(e)e.textContent=S.coins});const e=$("#bal");if(e){e.classList.remove("pop");void e.offsetWidth;e.classList.add("pop")}}
+
+async function claim(){
+  if(claiming) return; claiming=true;
+  try{await claimInner()}finally{claiming=false}
+}
+async function claimInner(){
+  await refreshS(); await loadCfg();
+  if(!canClaim()){paintClaim();return toast(CFG.miningOn?"Not ready yet":"Mining is paused for now");}
+  const add=rewardNow(), coins=round1((S.coins||0)+add), lastClaim=Date.now();
+  try{await store.patch({coins,lastClaim});S.coins=coins;S.lastClaim=lastClaim;setCoins();paintClaim();buzz();toast(`+${add} coins`);streakWant=true;xpAdd(10);confetti(14)}
+  catch(e){console.error(e);toast("Could not save. Check your internet.")}
+}
+const pending={};
+function bind(){
+  $("#claim").onclick=claim; $("#dog").onclick=claim;
+  document.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>taskClick(b));
+  const c=$("#copy"); if(c) c.onclick=copyLink;
+  const ap=$("#apply"); if(ap) ap.onclick=applyCode;
+  const rf=$("#refresh"); if(rf) rf.onclick=async()=>{try{refs=await store.refCount();dbg.cnt="ok, "+refs}catch(e){dbg.cnt="error: "+(e&&e.code||e&&e.message||e)}render();switchTab("friends");toast("Friends: "+refs)};
+  const sh=$("#share"); if(sh) sh.onclick=()=>{const u="https://t.me/share/url?url="+encodeURIComponent(inviteLink())+"&text="+encodeURIComponent("Join me on $EDOGE mining 🐕 Free daily coins! Invite code: "+myTgId);
+    try{tg&&tg.openTelegramLink?tg.openTelegramLink(u):window.open(u,"_blank")}catch(e){window.open(u,"_blank")}};
+  const w=$("#savew"); if(w) w.onclick=saveWallet;
+  document.querySelectorAll("#shopseg button").forEach(b=>b.onclick=()=>{shopTab=b.dataset.s;document.querySelectorAll("#shopseg button").forEach(x=>x.classList.toggle("on",x===b));$("#shopbody").innerHTML=shopBody();bindShop()});
+  bindShop(); bindPet();
+  const sn=$("#snd"); if(sn) sn.onclick=()=>{SND=!SND;try{localStorage.setItem("edoge_snd",SND?"1":"0")}catch(e){}sn.textContent=SND?"🔊 Sound: On":"🔇 Sound: Off";sfx("ok")};
+  document.querySelectorAll("#lbseg button").forEach(b=>b.onclick=()=>{lbTab=b.dataset.k;document.querySelectorAll("#lbseg button").forEach(x=>x.classList.toggle("on",x===b));loadLb()});
+  if($("#lblist")) loadLb();
+  const sp=$("#spin"); if(sp){sp.onclick=doSpin;drawWheel(wheelAngle)}
+  const gs=$("#gstart"); if(gs){gs.onclick=startGame;attachGameInput();drawIdle()}
+}
+
+/* ---------- Lucky Spin ---------- */
+function drawWheel(a){
+  const c=$("#wheel"); if(!c) return; const x=c.getContext("2d"), R=260, n=PRIZES.length, seg=Math.PI*2/n;
+  const cols=["#ffc62e","#ff5c9d","#58d6ff","#5ef2b0","#fff6e0","#ff9f43"];
+  x.clearRect(0,0,520,520); x.save(); x.translate(R,R); x.rotate(a);
+  for(let i=0;i<n;i++){
+    x.beginPath(); x.moveTo(0,0); x.arc(0,0,R-8,i*seg,(i+1)*seg); x.closePath();
+    x.fillStyle=cols[i%cols.length]; x.fill(); x.lineWidth=6; x.strokeStyle="#000"; x.stroke();
+    x.save(); x.rotate((i+.5)*seg); x.fillStyle="#000"; x.font="900 46px Arial Black,Arial,sans-serif"; x.textAlign="right"; x.fillText("+"+Math.min(PRIZES[i].v,CFG.spinMax),R-42,16); x.restore();
+  }
+  x.beginPath(); x.arc(0,0,36,0,Math.PI*2); x.fillStyle="#000"; x.fill(); x.restore();
+}
+async function doSpin(){
+  if(spinning||gameRun||petBusy) return;
+  await refreshS();
+  await loadCfg(); if(!CFG.appOn||!CFG.gamesOn||!CFG.spinOn) return toast("Lucky Spin is paused for now");
+  if(spinsLeft()<=0) return toast("No spins left today. Come back tomorrow!");
+  let r=Math.random()*PRIZES.reduce((a,p)=>a+p.w,0), idx=0;
+  for(let i=0;i<PRIZES.length;i++){r-=PRIZES[i].w; if(r<=0){idx=i;break}}
+  const prize={v:Math.min(PRIZES[idx].v,CFG.spinMax)}, day=dayNum(), used=(S.spinDay===day?(S.spinsUsed||0):0)+1, coins=round1((S.coins||0)+prize.v);
+  try{await store.patch({coins,spinDay:day,spinsUsed:used})}catch(e){console.error(e);return toast("Could not save. Check your internet.")}
+  S.coins=coins; S.spinDay=day; S.spinsUsed=used; spinning=true;
+  const b=$("#spin"); if(b) b.disabled=true;
+  const seg=Math.PI*2/PRIZES.length, jitter=(Math.random()-.5)*seg*.6;
+  const target=-Math.PI/2-(idx+.5)*seg+jitter, a0=wheelAngle;
+  const delta=(((target-a0)%(Math.PI*2))+Math.PI*2)%(Math.PI*2), total=Math.PI*2*5+delta, T=4000, t0=performance.now();
+  await new Promise(res=>{(function f(now){
+    const p=Math.min(1,(now-t0)/T), e=1-Math.pow(1-p,3);
+    wheelAngle=a0+total*e; drawWheel(wheelAngle);
+    if(p<1) requestAnimationFrame(f); else res();
+  })(t0)});
+  wheelAngle=((wheelAngle%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  spinning=false; setCoins();
+  const l=$("#spinsLeft"); if(l) l.textContent=spinsLeft();
+  const bb=$("#spin"); if(bb) bb.disabled=spinsLeft()<=0;
+  buzz(); toast("🎉 +"+prize.v+" coins!"); xpAdd(3);
+  if(pendingRender){pendingRender=false;render();switchTab("games")}
+}
+
+/* ---------- EDOGE Catcher ---------- */
+const GW=340, GH=460, DOGE_Y=GH-54;
+function gctx(){const c=$("#gc");return c?c.getContext("2d"):null}
+function drawIdle(){
+  const x=gctx(); if(!x) return;
+  x.clearRect(0,0,GW,GH); x.fillStyle="#221a45"; x.fillRect(0,0,GW,GH);
+  x.textAlign="center"; x.fillStyle="#fff6e0"; x.font="900 26px Arial Black,Arial,sans-serif"; x.fillText("EDOGE Catcher",GW/2,150);
+  x.font="700 16px Arial,sans-serif"; x.fillText(playsLeft()>0?"Tap Play to start":"No plays left today",GW/2,185);
+  x.font="64px serif"; x.fillText("🐕",GW/2,DOGE_Y+28); x.font="32px serif"; x.fillText("🪙",80,260); x.fillText("💣",250,300);
+}
+let inputOn=null;
+function attachGameInput(){
+  const c=$("#gc"); if(!c||inputOn===c) return; inputOn=c;
+  const mv=e=>{if(!gameRun)return;const r=c.getBoundingClientRect();gx=Math.max(24,Math.min(GW-24,(e.clientX-r.left)/r.width*GW));e.preventDefault()};
+  c.addEventListener("pointerdown",e=>{try{c.setPointerCapture(e.pointerId)}catch(_){}mv(e)});
+  c.addEventListener("pointermove",mv);
+}
+async function startGame(){
+  if(gameRun||spinning||petBusy) return;
+  await refreshS();
+  await loadCfg(); if(!CFG.appOn||!CFG.gamesOn||!CFG.catcherOn) return toast("Catcher is paused for now");
+  if(playsLeft()<=0) return toast("No plays left today. Come back tomorrow!");
+  const day=dayNum(), same=S.gameDay===day;
+  const patch={gameDay:day,gamePlays:(same?(S.gamePlays||0):0)+1,gameCoins:same?(S.gameCoins||0):0};
+  try{await store.patch(patch)}catch(e){console.error(e);return toast("Could not start. Check your internet.")}
+  Object.assign(S,patch);
+  const pl=$("#playsLeft"); if(pl) pl.textContent=playsLeft();
+  const b=$("#gstart"); if(b) b.disabled=true;
+  try{tg&&tg.disableVerticalSwipes&&tg.disableVerticalSwipes()}catch(e){}
+  gx=GW/2; gameRun=true;
+  G={t:0,score:0,items:[],nextCoin:.6,nextBomb:1.4,over:false,why:"",last:performance.now()};
+  requestAnimationFrame(gameFrame);
+}
+const KINDS=[{v:.2,sp:.8,r:13,c:"#fff6e0",w:50},{v:.5,sp:1,r:15,c:"#ffc62e",w:35},{v:1,sp:1.4,r:17,c:"#ff9f43",w:15}];
+function gameFrame(now){
+  if(!G) return;
+  const dt=Math.min(.05,(now-G.last)/1000); G.last=now; G.t+=dt;
+  const base=210+G.t*5.4;                                   // fall speed keeps rising, no levels
+  // one coin about every 2.2 seconds; the round ends after 60 seconds
+  if(G.t>=G.nextCoin){
+    let r=Math.random()*100,k=KINDS[0]; for(const q of KINDS){r-=q.w;if(r<=0){k=q;break}}
+    G.items.push({type:"coin",v:k.v,r:k.r,c:k.c,x:24+Math.random()*(GW-48),y:-20,sp:k.sp});
+    G.nextCoin=G.t+2.2*(.85+Math.random()*.3);
+  }
+  if(G.t>=G.nextBomb){
+    G.items.push({type:"bomb",r:15,x:20+Math.random()*(GW-40),y:-20,sp:1.05});
+    G.nextBomb=G.t+Math.max(.55,1.6-G.t*.0175)*(.8+Math.random()*.4);
+  }
+  if(G.t>=GAME_SECS){G.over=true;G.why="time"}
+  let ended=false;
+  for(const it of G.items){
+    it.y+=base*it.sp*dt;
+    if(!it.dead && Math.abs(it.y-DOGE_Y)<it.r+20 && Math.abs(it.x-gx)<it.r+26){
+      it.dead=true;
+      if(it.type==="bomb"){G.over=true;G.why="bomb";ended=true}
+      else{G.score=round1(G.score+it.v)}
+    } else if(it.y>GH+50){ it.dead=true; }
+  }
+  G.items=G.items.filter(i=>!i.dead);
+  drawGame();
+  if(ended||G.over) return endGame();
+  requestAnimationFrame(gameFrame);
+}
+function drawGame(){
+  const x=gctx(); if(!x||!G) return;
+  x.clearRect(0,0,GW,GH); x.fillStyle="#221a45"; x.fillRect(0,0,GW,GH);
+  x.textAlign="center"; x.textBaseline="middle";
+  for(const it of G.items){
+    if(it.type==="bomb"){x.font="30px serif";x.fillText("💣",it.x,it.y);continue}
+    x.beginPath(); x.arc(it.x,it.y,it.r,0,Math.PI*2); x.fillStyle=it.type==="big"?"#ff5c9d":it.c; x.fill(); x.lineWidth=3; x.strokeStyle="#000"; x.stroke();
+    x.fillStyle="#000"; x.font=it.type==="big"?"900 16px Arial Black,Arial":"900 12px Arial Black,Arial"; x.fillText(it.type==="big"?"EDOGE":String(it.v),it.x,it.y-(it.type==="big"?7:0));
+    if(it.type==="big"){x.font="900 17px Arial Black,Arial";x.fillText(String(it.v),it.x,it.y+11)}
+  }
+  x.font="46px serif"; x.fillText("🐕",gx,DOGE_Y+6);
+  x.textAlign="left"; x.textBaseline="alphabetic"; x.fillStyle="#fff6e0"; x.font="900 18px Arial Black,Arial"; x.fillText("🪙 "+G.score,12,26);
+  x.textAlign="right"; const ts=Math.max(0,Math.ceil(GAME_SECS-G.t)); x.fillText("⏱ 0:"+String(ts).padStart(2,"0"),GW-12,26);
+}
+async function endGame(){
+  const g=G, score=g.score; G=null;
+  const gain=round1(Math.min(score,CFG.catcherMax));
+  let msg=gain>0?"+"+gain+" coins":"No coins this time";
+  if(gain>0){
+    try{
+      await refreshS();
+      const coins=round1((S.coins||0)+gain), gameCoins=round1((S.gameCoins||0)+gain);
+      await store.patch({coins,gameCoins}); S.coins=coins; S.gameCoins=gameCoins; if(gain>W.catcher)W.catcher=gain; buzz(); xpAdd(5);
+    }catch(e){console.error(e);msg="Could not save your coins. Check your internet."}
+  }
+  const x=gctx();
+  if(x){x.fillStyle="rgba(0,0,0,.65)";x.fillRect(0,0,GW,GH);x.textAlign="center";x.fillStyle="#fff6e0";
+    x.font="900 28px Arial Black,Arial";x.fillText(g.why==="bomb"?"Boom! 💥":"Time is up! ⏱",GW/2,190);
+    x.font="900 22px Arial Black,Arial";x.fillStyle="#ffc62e";x.fillText(msg,GW/2,235);}
+  gameRun=false;
+  try{tg&&tg.enableVerticalSwipes&&tg.enableVerticalSwipes()}catch(e){}
+  const b=$("#gstart"); if(b) b.disabled=false;
+  const pl=$("#playsLeft"); if(pl) pl.textContent=playsLeft();
+  setCoins();
+  if(pendingRender){pendingRender=false;setTimeout(()=>{render();switchTab("games")},1800)}
+}
+/* ---------- Leaderboard ---------- */
+function lbSoon(){clearTimeout(lbTimer);lbTimer=setTimeout(pushLb,1500)}
+async function pushLb(){try{if(!S||mode!=="cloud")return;await store.lbPut(myName.slice(0,40),S.coins);await store.lbwPut(wkNum(),myName.slice(0,40),{catcher:W.catcher,pet:W.pet})}catch(e){console.warn("lb",e&&e.code||e)}}
+async function loadLb(){
+  const el=$("#lblist"); if(!el) return;
+  try{
+    const rows=(await store.lbTop(lbTab,wkNum())).filter(r=>Number(r[lbTab])>0);
+    el.innerHTML=rows.length?rows.map((r,i)=>`<div class="lbrow${r.id===store.uid?" me":""}"><b class="r">${i<3?["🥇","🥈","🥉"][i]:i+1}</b><span class="n">${esc(String(r.name||"Player").slice(0,24))}</span><b>${lbTab==="coins"?round1(r.coins):r[lbTab]}</b></div>`).join(""):'<p class="note">No scores yet. Be the first!</p>';
+  }catch(e){el.innerHTML='<p class="note">Leaderboard is not available right now.</p>'}
+}
+
+/* ---------- Cards ---------- */
+async function buyCard(id){
+  const c=CARDS.find(x=>x.id===id); if(!c) return;
+  await refreshS();
+  await loadCfg(); if(!CFG.appOn||!CFG.cardsOn) return toast("The card shop is paused for now");
+  if(S.cards&&S.cards[id]) return toast("You already own this card");
+  if((S.coins||0)<c.price) return toast("Not enough coins. You need "+c.price);
+  if(!confirm("Buy "+c.name+" for "+c.price+" coins?")) return;
+  const cards=Object.assign({},S.cards||{},{[id]:1}), coins=round1((S.coins||0)-c.price);
+  try{await store.patch({coins,cards});S.coins=coins;S.cards=cards;buzz();xpAdd(5);toast("🃏 "+c.name+" unlocked! +"+c.boost+" per claim");render();switchTab("cards")}
+  catch(e){console.error(e);toast("Could not buy ("+((e&&e.code)||"error")+")")}
+}
+
+/* ---------- Dog Pet ---------- */
+function petHtml(){
+  const sk=curSkin(), rw=petReward();
+  return `<div class="petface" style="background:${sk.bg}">🐶${sk.acc?`<span style="position:absolute;top:-24px;right:4px;font-size:44px">${sk.acc}</span>`:""}<span class="mood">${petMood()}</span></div>
+  <p class="note" style="text-align:center;color:var(--ink);margin:0 0 10px">Care for your pup! Each care earns +${rw} coins and XP. A care is ready every 3 hours.</p>
+  ${PET_ACTS.map(a=>`<div class="row" style="margin-top:6px"><b>${a.icon} ${a.label}</b><small>${petStat(a)}%</small></div><div class="pbar"><i style="width:${petStat(a)}%;background:${a.col}"></i></div>`).join("")}
+  <div id="petplay"></div>
+  <div class="two" style="grid-template-columns:repeat(3,1fr);margin-top:8px">${PET_ACTS.map(a=>`<button class="btn" data-pet="${a.id}" style="padding:10px 4px;font-size:14px;background:${a.col}">${a.icon} ${a.label}</button>`).join("")}</div>`;
+}
+function paintPet(){
+  document.querySelectorAll("[data-pet]").forEach(b=>{
+    const a=PET_ACTS.find(x=>x.id===b.dataset.pet); if(!a||PA) return;
+    const left=PET_COOLDOWN-(Date.now()-(S[a.f]||0));
+    if(petActsLeft()<=0){b.disabled=true;b.textContent="Tomorrow"}
+    else if(left>0){b.disabled=true;b.textContent=fmt(left).slice(0,5)}
+    else{b.disabled=false;b.textContent=a.icon+" "+a.label}
+  });
+}
+function bindPet(){document.querySelectorAll("[data-pet]").forEach(b=>b.onclick=()=>petStart(b.dataset.pet));paintPet()}
+function petStart(id){
+  const a=PET_ACTS.find(x=>x.id===id); if(!a||PA||gameRun||spinning) return;
+  if(!CFG.appOn||!CFG.gamesOn||!CFG.petOn) return toast("Pet care is paused for now");
+  if(petActsLeft()<=0) return toast("Enough care for today. Come back tomorrow!");
+  if(!petReady(a)) return toast("Not ready yet");
+  PA={a,taps:0,t0:Date.now()}; petBusy=true;
+  const el=$("#petplay"); if(!el) return;
+  el.innerHTML=`<div class="qbub" style="text-align:center"><div class="row"><b>${a.hint}!</b><b id="petCnt">0/${PET_TAPS}</b></div>
+   <button class="btn" id="petTap" style="font-size:54px;padding:6px;margin-top:8px;background:${a.col}">${a.icon}</button><div class="xpbar"><i id="petBar" style="width:0%"></i></div></div>`;
+  document.querySelectorAll("[data-pet]").forEach(b=>b.disabled=true);
+  $("#petTap").onclick=ev=>petTap(ev);
+  PA.timer=setTimeout(petFail,PET_TIME*1000);
+}
+function petTap(ev){
+  if(!PA) return; PA.taps++; sfx("tap");
+  try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred("light")}catch(_){}
+  const f=document.createElement("span"); f.className="fl"; f.textContent=["💖","✨","🐾"][PA.taps%3];
+  f.style.left=(ev.clientX-12)+"px"; f.style.top=(ev.clientY-30)+"px"; document.body.appendChild(f); setTimeout(()=>f.remove(),1000);
+  const c=$("#petCnt"),bar=$("#petBar"); if(c) c.textContent=PA.taps+"/"+PET_TAPS; if(bar) bar.style.width=Math.min(100,PA.taps/PET_TAPS*100)+"%";
+  if(PA.taps>=PET_TAPS) petDone();
+}
+function petEnd(){if(PA){clearTimeout(PA.timer)} PA=null; petBusy=false}
+function petFail(){
+  if(!PA) return; petEnd(); const el=$("#petplay"); if(el) el.innerHTML='<p class="note" style="text-align:center;color:var(--ink)">Too slow! Try again, nothing was used.</p>'; paintPet();
+  if(pendingRender){pendingRender=false;render();switchTab("games")}
+}
+async function petDone(){
+  const a=PA.a; petEnd();
+  try{
+    await refreshS(); await loadCfg();
+    if(!CFG.appOn||!CFG.gamesOn||!CFG.petOn) return toast("Pet care is paused for now");
+    if(!petReady(a)||petActsLeft()<=0) return toast("Not ready yet");
+    const day=dayNum(), now=Date.now(), rw=petReward();
+    const patch={coins:round1((S.coins||0)+rw),[a.f]:now,petDay:day,petActs:(S.petDay===day?(S.petActs||0):0)+1};
+    await store.patch(patch); Object.assign(S,patch); W.pet=Math.min(70,(W.pet||0)+1);
+    buzz(); xpAdd(3); confetti(10); toast(a.icon+" Yum! +"+rw+" coins"); setCoins();
+  }catch(e){console.error(e);toast("Could not save. Check your internet.")}
+  const pa=$("#petarea"); if(pa){pa.innerHTML=petHtml();bindPet()}
+  const l=$("#petLeft"); if(l) l.textContent=petActsLeft();
+  if(pendingRender){pendingRender=false;render();switchTab("games")}
+}
+
+function showModal(h){$("#modalbox").innerHTML=h;$("#modal").classList.add("on")}
+function hideModal(){$("#modal").classList.remove("on")}
+
+/* ---------- Stickers ---------- */
+async function buySticker(id){
+  const k=STICKERS.find(x=>x.id===id); if(!k) return;
+  await refreshS(); await loadCfg(); if(!CFG.appOn||!CFG.cardsOn) return toast("The shop is paused for now");
+  if(ownsSticker(id)) return toast("You already own this sticker");
+  if((S.coins||0)<k.price) return toast("Not enough coins. You need "+k.price);
+  if(!confirm("Buy "+k.name+" for "+k.price+" coins?")) return;
+  const stk=Object.assign({},S.stk||{},{[id]:1}), coins=round1((S.coins||0)-k.price);
+  try{await store.patch({coins,stk});S.coins=coins;S.stk=stk;buzz();xpAdd(5);confetti(14);toast(k.icon+" "+k.name+" unlocked!");render();switchTab("cards")}
+  catch(e){console.error(e);toast("Could not buy ("+((e&&e.code)||"error")+")")}
+}
+async function wearSticker(id){
+  if(id&&!ownsSticker(id)) return;
+  try{await store.patch({stick:id});S.stick=id;buzz();toast(id?"Sticker on!":"Sticker removed");render();switchTab("cards")}
+  catch(e){console.error(e);toast("Could not save. Check your internet.")}
+}
+/* ---------- Dog skins ---------- */
+async function buySkin(id){
+  const k=SKINS.find(x=>x.id===id); if(!k||k.price<=0) return;
+  await refreshS(); await loadCfg(); if(!CFG.appOn||!CFG.cardsOn) return toast("The shop is paused for now");
+  if(ownsSkin(id)) return toast("You already own this skin");
+  if((S.coins||0)<k.price) return toast("Not enough coins. You need "+k.price);
+  if(!confirm("Buy "+k.name+" for "+k.price+" coins?")) return;
+  const skins=Object.assign({},S.skins||{},{[id]:1}), coins=round1((S.coins||0)-k.price);
+  try{await store.patch({coins,skins});S.coins=coins;S.skins=skins;buzz();xpAdd(5);toast("🎨 "+k.name+" unlocked!");render();switchTab("cards")}
+  catch(e){console.error(e);toast("Could not buy ("+((e&&e.code)||"error")+")")}
+}
+async function equipSkin(id){
+  if(!ownsSkin(id)) return;
+  try{await store.patch({skin:id});S.skin=id;buzz();toast("Equipped!");render();switchTab("cards")}
+  catch(e){console.error(e);toast("Could not save. Check your internet.")}
+}
+function openUrl(u){try{if(tg&&u.startsWith("https://t.me")&&tg.openTelegramLink)tg.openTelegramLink(u);else if(tg&&tg.openLink)tg.openLink(u);else window.open(u,"_blank")}catch(e){window.open(u,"_blank")}}
+async function taskClick(btn){
+  const t=allTasks().find(x=>x.id===btn.dataset.task); if(!t) return;
+  if(!pending[t.id]){pending[t.id]=Date.now();openUrl(t.url);btn.textContent="Claim";btn.classList.remove("sky");btn.classList.add("pink");return;}
+  if(Date.now()-pending[t.id]<8000) return toast("Finish the task first, then tap Claim");
+  await refreshS(); if(S.tasks&&S.tasks[t.id]){render();switchTab("tasks");return;}
+  const tasks=Object.assign({},S.tasks||{},{[t.id]:true}), coins=round1((S.coins||0)+t.reward);
+  try{await store.patch({tasks,coins});S.tasks=tasks;S.coins=coins;buzz();toast(`+${t.reward} coins`);xpAdd(10);render();switchTab("tasks")}
+  catch(e){toast("Could not save. Check your internet.")}
+}
+async function applyCode(){
+  const v=($("#code").value||"").trim().replace(/[^A-Za-z0-9_-]/g,"").slice(0,40);
+  if(!v) return toast("Enter a code first");
+  if(v===myTgId) return toast("You cannot use your own code");
+  try{
+    try{await store.addRef(v)}catch(e){console.warn("addRef (maybe already saved)",e)}
+    await store.patch({referredBy:v});
+    S.referredBy=v; dbg.ref="saved (typed code)"; buzz(); toast("Invite code applied");
+  }catch(e){
+    console.error(e); dbg.ref="error: "+(e&&e.code||e&&e.message||e);
+    toast("Could not apply: "+(e&&e.code||"error"));
+  }
+  render(); switchTab("friends");
+}
+async function copyLink(){
+  const l=inviteLink();
+  try{await navigator.clipboard.writeText(l);toast("Link copied")}catch(e){const i=$("#link");i.select();try{document.execCommand("copy");toast("Link copied")}catch(_){toast("Press and hold the link to copy")}}
+}
+async function saveWallet(){
+  const v=$("#wallet").value.trim();
+  if(!/^0x[a-fA-F0-9]{40}$/.test(v)) return toast("Enter a valid address: 0x + 40 characters");
+  try{await store.patch({wallet:v});S.wallet=v;buzz();toast("Wallet saved")}catch(e){toast("Could not save. Check your internet.")}
+}
+function switchTab(t){
+  if(t==="lb"&&$("#lblist")) loadLb();
+  document.querySelectorAll(".tab").forEach(e=>e.classList.toggle("on",e.id==="t-"+t));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>switchTab(b.dataset.t));
+
+/* ---------- start ---------- */
+(async()=>{
+  try{
+    store=await makeStore();
+    S=await store.load();
+    if(!S){
+      const ref=(startParam&&startParam!==myTgId)?startParam:"";
+      S={tgId:myTgId,name:myName,username:myUname,coins:WELCOME_BONUS,lastClaim:0,tasks:{},wallet:"",referredBy:ref,createdAt:Date.now()};
+      await store.create(S);
+      if(ref){try{await store.addRef(ref);dbg.ref="saved"}catch(e){console.warn("ref failed",e);dbg.ref="error: "+(e&&e.code||e&&e.message||e)}}
+    }
+    // Existing account that never used an invite, opened via someone's link within its first 7 days: apply it now.
+    if(S && !S.referredBy && startParam && startParam!==myTgId && (Date.now()-(S.createdAt||0))<7*24*3600*1000){
+      try{
+        try{await store.addRef(startParam)}catch(e){console.warn("late addRef",e)}
+        await store.patch({referredBy:startParam}); S.referredBy=startParam; dbg.ref="saved (late, from link)";
+      }catch(e){dbg.ref="error (late): "+(e&&e.code||e&&e.message||e)}
+    }
+    try{refs=await store.refCount();dbg.cnt="ok, "+refs}catch(e){refs=0;dbg.cnt="error: "+(e&&e.code||e&&e.message||e)}
+    if(myUname && S.username!==myUname){try{await store.patch({username:myUname});S.username=myUname}catch(e){}}
+    xpSrv=S.xp||0; await loadCfg();
+    try{const w=await store.lbwGet(wkNum()); W={wk:wkNum(),catcher:(w&&w.catcher)||0,pet:(w&&w.pet)||0}}catch(e){W={wk:wkNum(),catcher:0,pet:0}}
+    try{CUSTOM=(await store.getTasks(myUname)).filter(d=>d&&d.title&&d.url&&/^https?:\/\//.test(d.url)).map(d=>({id:"c_"+d.id,icon:String(d.icon||"⭐").slice(0,4),title:String(d.title).slice(0,80),reward:Math.min(100,Math.max(0,Number(d.reward)||0)),url:d.url,at:d.createdAt||0})).sort((a,b)=>a.at-b.at)}catch(e){console.warn("tasks",e)}
+    $("#nav").hidden=false; render(); lbSoon();
+    try{const g=S.lastGift; if(g&&g.at){const k="edoge_gift_"+myTgId; const seen=Number(localStorage.getItem(k)||0); if(g.at>seen){localStorage.setItem(k,String(g.at)); setTimeout(()=>toast("🎁 +"+g.coins+" coins from the team"+(g.note?": "+String(g.note).slice(0,60):"")),700)}}}catch(e){}
+    document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S){loadCfg().then(()=>{render()})}});
+    tick=setInterval(()=>{paintClaim();paintPet()},1000);
+    window.__app={S:()=>S,mode:()=>mode,cfg:o=>{Object.assign(CFG,o);render()},game:()=>G,setX:v=>{gx=v},tasks:l=>{CUSTOM=l;render()}};
+  }catch(e){
+    console.error(e);
+    $("#main").innerHTML='<div class="card"><b>Could not start.</b><p class="note" style="color:#000">Please close and open the app again.</p></div>';
+  }
+})();
+</script>
+</body>
+</html>
